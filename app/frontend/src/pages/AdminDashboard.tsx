@@ -105,6 +105,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const normalizeString = (str: any): string => {
+    if (!str) return '';
+    return String(str).trim().toUpperCase();
+  };
+
   const handleExcelUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!excelFile || !excelAnno) {
@@ -126,25 +131,40 @@ export default function AdminDashboard() {
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      // Filter only "Autorizzata" caves and prepare data
+      console.log('Sample row:', jsonData[0]);
+
+      // Filter only "AUTORIZZATA" caves and prepare data
       const caveDetails = jsonData
-        .filter((row: any) => row['Stato Cava'] === 'Autorizzata')
+        .filter((row: any) => {
+          const statoCava = normalizeString(row['Stato Cava']);
+          return statoCava === 'AUTORIZZATA';
+        })
         .map((row: any) => ({
           anno: parseInt(excelAnno),
-          numero_fascicolo: row['Numero Fascicolo'] || '',
-          azienda: row['Azienda'] || '',
-          localita: row['Località'] || '',
-          comune: row['Comune'] || '',
-          provincia: row['Provincia'] || '',
-          dati_catastali: row['Dati Catastali'] || '',
-          stato_cava: row['Stato Cava'] || '',
+          numero_fascicolo: row['Numero Fascicolo'] ? String(row['Numero Fascicolo']).trim() : '',
+          azienda: row['Azienda'] ? String(row['Azienda']).trim() : '',
+          localita: row['Località'] ? String(row['Località']).trim() : '',
+          comune: row['Comune'] ? String(row['Comune']).trim() : '',
+          provincia: row['Provincia'] ? String(row['Provincia']).trim() : '',
+          dati_catastali: row['Dati Catastali'] ? String(row['Dati Catastali']).trim() : '',
+          stato_cava: row['Stato Cava'] ? String(row['Stato Cava']).trim() : '',
           aperta_fino_al: row['Aperta fino al (anno)'] ? parseInt(row['Aperta fino al (anno)']) : null,
-          materiale: row['Materiale'] || '',
-          numero_decreto: row['Numero decreto'] || null,
+          materiale: row['Materiale'] ? String(row['Materiale']).trim() : '',
+          numero_decreto: row['Numero decreto'] ? String(row['Numero decreto']).trim() : null,
           data_decreto: row['Data decreto'] ? new Date(row['Data decreto']).toISOString().split('T')[0] : null,
           scadenza_autorizzazione: row['Scadenza autorizzazione'] ? new Date(row['Scadenza autorizzazione']).toISOString().split('T')[0] : null,
           created_at: new Date().toISOString()
         }));
+
+      if (caveDetails.length === 0) {
+        toast({
+          title: 'Attenzione',
+          description: 'Nessuna cava con stato "AUTORIZZATA" trovata nel file',
+          variant: 'destructive'
+        });
+        setUploading(false);
+        return;
+      }
 
       // Delete existing records for this year
       const existingRecords = await client.entities.cave_details.query({
@@ -159,6 +179,31 @@ export default function AdminDashboard() {
       // Insert new records
       for (const detail of caveDetails) {
         await client.entities.cave_details.create({ data: detail });
+      }
+
+      // Update or create annual summary
+      const existingAnnual = await client.entities.annual_cave_data.query({
+        query: { anno: parseInt(excelAnno) },
+        limit: 1
+      });
+
+      if (existingAnnual.data.items.length > 0) {
+        await client.entities.annual_cave_data.update({
+          id: existingAnnual.data.items[0].id,
+          data: {
+            numero_cave: caveDetails.length,
+            updated_at: new Date().toISOString()
+          }
+        });
+      } else {
+        await client.entities.annual_cave_data.create({
+          data: {
+            anno: parseInt(excelAnno),
+            numero_cave: caveDetails.length,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        });
       }
 
       toast({
@@ -309,7 +354,7 @@ export default function AdminDashboard() {
                     required
                   />
                   <p className="text-sm text-gray-500 mt-2">
-                    Il file deve contenere le colonne: Stato Cava, Provincia, Materiale
+                    Colonne richieste: Anno, Stato Cava, Provincia, Materiale
                   </p>
                 </div>
                 <Button 
@@ -336,10 +381,11 @@ export default function AdminDashboard() {
           <CardContent className="pt-6">
             <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Informazioni</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Se inserisci un anno già esistente, i dati verranno aggiornati</li>
-              <li>• Il file Excel verrà filtrato automaticamente per cave con stato "Autorizzata"</li>
+              <li>• Il sistema filtra automaticamente solo le cave con stato "AUTORIZZATA"</li>
+              <li>• Le colonne Provincia e Materiale vengono estratte per le elaborazioni grafiche</li>
               <li>• I dati caricati sostituiranno quelli esistenti per lo stesso anno</li>
-              <li>• Le elaborazioni grafiche si aggiorneranno automaticamente</li>
+              <li>• Il numero totale di cave viene aggiornato automaticamente dopo il caricamento</li>
+              <li>• Le elaborazioni grafiche si aggiorneranno immediatamente nella dashboard</li>
             </ul>
           </CardContent>
         </Card>

@@ -12,8 +12,8 @@ dependencies:
     specifier: latest
     version: 0.0.14(rollup@2.79.2)(vite@5.4.21)
   '@metagptx/web-sdk':
-    specifier: latest
-    version: 0.0.51(@types/node@22.19.3)(eslint@9.39.2)(prettier@3.7.4)
+    specifier: ^0.0.53
+    version: 0.0.53(eslint@9.39.2)(prettier@3.7.4)(vite@5.4.21)
   '@playwright/mcp':
     specifier: ^0.0.36
     version: 0.0.36(hono@4.11.3)
@@ -920,8 +920,22 @@ packages:
       - supports-color
     dev: false
 
-  /@metagptx/web-sdk@0.0.51(@types/node@22.19.3)(eslint@9.39.2)(prettier@3.7.4):
-    resolution: {integrity: sha512-EN0deaNuPEOLhfzEoGBzgUGtZ9Yxsu/glrOe+dkBB7msFwCLjIgn+1wOqvgBKPGNFL54Sbn0zIhgX8LkogkIrQ==}
+  /@metagptx/web-sdk@0.0.53(eslint@9.39.2)(prettier@3.7.4)(vite@5.4.21):
+    resolution: {integrity: sha512-AXtN+Ff5w0RExCst3ITRlcgEf+tLiJIAV454F6n/rLXiYEXR3O9wOa/xs9Ch7TVKuE4a8f3HsBx0W0Io6ur10w==}
+    peerDependencies:
+      '@babel/parser': ^7.0.0
+      '@babel/traverse': ^7.0.0
+      '@babel/types': ^7.0.0
+      vite: ^4.0.0 || ^5.0.0 || ^6.0.0
+    peerDependenciesMeta:
+      '@babel/parser':
+        optional: true
+      '@babel/traverse':
+        optional: true
+      '@babel/types':
+        optional: true
+      vite:
+        optional: true
     dependencies:
       '@types/qs': 6.14.0
       axios: 1.13.2
@@ -933,17 +947,9 @@ packages:
       vite: 5.4.21(@types/node@22.19.3)
     transitivePeerDependencies:
       - '@types/eslint'
-      - '@types/node'
       - debug
       - eslint
-      - less
-      - lightningcss
       - prettier
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
     dev: false
 
   /@modelcontextprotocol/sdk@1.25.2(hono@4.11.3)(zod@3.25.76):
