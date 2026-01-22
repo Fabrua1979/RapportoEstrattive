@@ -1,0 +1,76 @@
+{
+    "title": "cave_details",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Reference year"
+        },
+        "numero_fascicolo": {
+            "type": "string",
+            "description": "File number"
+        },
+        "azienda": {
+            "type": "string",
+            "description": "Company name"
+        },
+        "localita": {
+            "type": "string",
+            "description": "Location"
+        },
+        "comune": {
+            "type": "string",
+            "description": "Municipality"
+        },
+        "provincia": {
+            "type": "string",
+            "description": "Province"
+        },
+        "dati_catastali": {
+            "type": "string",
+            "description": "Cadastral data"
+        },
+        "stato_cava": {
+            "type": "string",
+            "description": "Cave status"
+        },
+        "aperta_fino_al": {
+            "type": "integer",
+            "description": "Open until year"
+        },
+        "materiale": {
+            "type": "string",
+            "description": "Material type"
+        },
+        "numero_decreto": {
+            "type": "string",
+            "description": "Decree number"
+        },
+        "data_decreto": {
+            "type": "string",
+            "description": "Decree date"
+        },
+        "scadenza_autorizzazione": {
+            "type": "string",
+            "description": "Authorization expiry"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "anno"
+    ]
+}
