@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Home, LogOut, Upload, Plus, Loader2 } from 'lucide-react';
+import { Home, LogOut, Upload, Plus, Loader2, Database } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const client = createClient();
+
+const PROVINCE = ['BA', 'BT', 'BR', 'FG', 'LE', 'TA'];
+const MATERIALI = ['Calcare', 'Calcarenite', 'Argilla', 'Conglomerati', 'Tufo', 'Pietra', 'Sabbia', 'Ghiaia', 'Altro'];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -17,12 +21,19 @@ export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // Manual entry form
-  const [anno, setAnno] = useState('');
-  const [numeroCave, setNumeroCave] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  // Manual entry for trend (annual total)
+  const [annoTrend, setAnnoTrend] = useState('');
+  const [numeroCaveTrend, setNumeroCaveTrend] = useState('');
+  const [submittingTrend, setSubmittingTrend] = useState(false);
   
-  // Excel upload
+  // Manual entry for province/material data
+  const [annoDettaglio, setAnnoDettaglio] = useState('');
+  const [provincia, setProvincia] = useState('');
+  const [materiale, setMateriale] = useState('');
+  const [numeroCaveDettaglio, setNumeroCaveDettaglio] = useState('');
+  const [submittingDettaglio, setSubmittingDettaglio] = useState(false);
+  
+  // Excel upload (only for comune details)
   const [excelAnno, setExcelAnno] = useState('');
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -51,48 +62,45 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
-  const handleManualSubmit = async (e: React.FormEvent) => {
+  const handleTrendSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
+    setSubmittingTrend(true);
 
     try {
-      // Check if year already exists
       const existingData = await client.entities.annual_cave_data.query({
-        query: { anno: parseInt(anno) },
+        query: { anno: parseInt(annoTrend) },
         limit: 1
       });
 
       if (existingData.data.items.length > 0) {
-        // Update existing record
         await client.entities.annual_cave_data.update({
           id: existingData.data.items[0].id,
           data: {
-            numero_cave: parseInt(numeroCave),
+            numero_cave: parseInt(numeroCaveTrend),
             updated_at: new Date().toISOString()
           }
         });
         toast({
-          title: 'Dati aggiornati',
-          description: `Anno ${anno} aggiornato con ${numeroCave} cave`
+          title: 'Trend aggiornato',
+          description: `Anno ${annoTrend} aggiornato con ${numeroCaveTrend} cave`
         });
       } else {
-        // Create new record
         await client.entities.annual_cave_data.create({
           data: {
-            anno: parseInt(anno),
-            numero_cave: parseInt(numeroCave),
+            anno: parseInt(annoTrend),
+            numero_cave: parseInt(numeroCaveTrend),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
         });
         toast({
-          title: 'Dati inseriti',
-          description: `Anno ${anno} creato con ${numeroCave} cave`
+          title: 'Trend inserito',
+          description: `Anno ${annoTrend} creato con ${numeroCaveTrend} cave`
         });
       }
 
-      setAnno('');
-      setNumeroCave('');
+      setAnnoTrend('');
+      setNumeroCaveTrend('');
     } catch (error: any) {
       const detail = error?.data?.detail || error?.response?.data?.detail || error.message;
       toast({
@@ -101,7 +109,63 @@ export default function AdminDashboard() {
         variant: 'destructive'
       });
     } finally {
-      setSubmitting(false);
+      setSubmittingTrend(false);
+    }
+  };
+
+  const handleDettaglioSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingDettaglio(true);
+
+    try {
+      const existingData = await client.entities.province_material_data.query({
+        query: { 
+          anno: parseInt(annoDettaglio),
+          provincia: provincia,
+          materiale: materiale
+        },
+        limit: 1
+      });
+
+      if (existingData.data.items.length > 0) {
+        await client.entities.province_material_data.update({
+          id: existingData.data.items[0].id,
+          data: {
+            numero_cave: parseInt(numeroCaveDettaglio),
+            updated_at: new Date().toISOString()
+          }
+        });
+        toast({
+          title: 'Dati aggiornati',
+          description: `${provincia} - ${materiale} (${annoDettaglio}): ${numeroCaveDettaglio} cave`
+        });
+      } else {
+        await client.entities.province_material_data.create({
+          data: {
+            anno: parseInt(annoDettaglio),
+            provincia: provincia,
+            materiale: materiale,
+            numero_cave: parseInt(numeroCaveDettaglio),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        });
+        toast({
+          title: 'Dati inseriti',
+          description: `${provincia} - ${materiale} (${annoDettaglio}): ${numeroCaveDettaglio} cave`
+        });
+      }
+
+      setNumeroCaveDettaglio('');
+    } catch (error: any) {
+      const detail = error?.data?.detail || error?.response?.data?.detail || error.message;
+      toast({
+        title: 'Errore',
+        description: detail,
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmittingDettaglio(false);
     }
   };
 
@@ -119,7 +183,6 @@ export default function AdminDashboard() {
     setUploading(true);
 
     try {
-      // Read Excel file
       const data = await excelFile.arrayBuffer();
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
@@ -127,54 +190,43 @@ export default function AdminDashboard() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       console.log('Total rows:', jsonData.length);
-      console.log('Sample row:', jsonData[0]);
 
-      // Prepare cave details (file already filtered for AUTORIZZATA)
-      const caveDetails = jsonData.map((row: any) => {
-        const detail = {
-          anno: parseInt(excelAnno),
-          numero_fascicolo: row['Numero Fascicolo'] ? String(row['Numero Fascicolo']).trim() : '',
-          comune: row['Comune'] ? String(row['Comune']).trim() : '',
-          provincia: row['Provincia'] ? String(row['Provincia']).trim() : '',
-          stato_cava: row['Stato Cava'] ? String(row['Stato Cava']).trim() : 'AUTORIZZATA',
-          materiale: row['Materiale'] ? String(row['Materiale']).trim() : '',
-          azienda: '',
-          localita: '',
-          dati_catastali: '',
-          aperta_fino_al: null,
-          numero_decreto: null,
-          data_decreto: null,
-          scadenza_autorizzazione: null,
-          created_at: new Date().toISOString()
-        };
-        return detail;
-      });
+      const caveDetails = jsonData.map((row: any) => ({
+        anno: parseInt(excelAnno),
+        numero_fascicolo: row['Numero Fascicolo'] ? String(row['Numero Fascicolo']).trim() : '',
+        comune: row['Comune'] ? String(row['Comune']).trim() : '',
+        provincia: row['Provincia'] ? String(row['Provincia']).trim() : '',
+        stato_cava: row['Stato Cava'] ? String(row['Stato Cava']).trim() : 'AUTORIZZATA',
+        materiale: row['Materiale'] ? String(row['Materiale']).trim() : '',
+        azienda: '',
+        localita: '',
+        dati_catastali: '',
+        aperta_fino_al: null,
+        numero_decreto: null,
+        data_decreto: null,
+        scadenza_autorizzazione: null,
+        created_at: new Date().toISOString()
+      }));
 
       if (caveDetails.length === 0) {
         toast({
           title: 'Errore',
-          description: 'Il file Excel è vuoto o non contiene dati validi',
+          description: 'Il file Excel è vuoto',
           variant: 'destructive'
         });
         setUploading(false);
         return;
       }
 
-      console.log('Prepared cave details:', caveDetails.length);
-
-      // Delete existing records for this year
       const existingRecords = await client.entities.cave_details.query({
         query: { anno: parseInt(excelAnno) },
         limit: 1000
       });
 
-      console.log('Existing records to delete:', existingRecords.data.items.length);
-
       for (const record of existingRecords.data.items) {
         await client.entities.cave_details.delete({ id: record.id });
       }
 
-      // Insert new records in batches
       let insertedCount = 0;
       for (const detail of caveDetails) {
         try {
@@ -185,41 +237,13 @@ export default function AdminDashboard() {
         }
       }
 
-      console.log('Inserted records:', insertedCount);
-
-      // Update or create annual summary
-      const existingAnnual = await client.entities.annual_cave_data.query({
-        query: { anno: parseInt(excelAnno) },
-        limit: 1
-      });
-
-      if (existingAnnual.data.items.length > 0) {
-        await client.entities.annual_cave_data.update({
-          id: existingAnnual.data.items[0].id,
-          data: {
-            numero_cave: insertedCount,
-            updated_at: new Date().toISOString()
-          }
-        });
-      } else {
-        await client.entities.annual_cave_data.create({
-          data: {
-            anno: parseInt(excelAnno),
-            numero_cave: insertedCount,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        });
-      }
-
       toast({
-        title: 'File caricato con successo',
-        description: `${insertedCount} cave autorizzate caricate per l'anno ${excelAnno}`
+        title: 'File caricato',
+        description: `${insertedCount} cave caricate per l'anno ${excelAnno}. I dettagli per comune sono ora disponibili nella dashboard.`
       });
 
       setExcelFile(null);
       setExcelAnno('');
-      // Reset file input
       const fileInput = document.getElementById('excel-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     } catch (error: any) {
@@ -245,7 +269,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-      {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Pannello Amministrativo</h1>
@@ -268,41 +291,41 @@ export default function AdminDashboard() {
           <p className="text-gray-600">Gestisci i dati delle cave autorizzate</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Manual Entry Card */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Trend Temporale */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Plus className="w-5 h-5" />
-                Inserimento Manuale
+                Trend Temporale
               </CardTitle>
               <CardDescription>
-                Inserisci o aggiorna il numero totale di cave autorizzate per anno
+                Numero totale cave per anno (grafico trend)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleManualSubmit} className="space-y-4">
+              <form onSubmit={handleTrendSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="anno">Anno</Label>
+                  <Label htmlFor="annoTrend">Anno</Label>
                   <Input
-                    id="anno"
+                    id="annoTrend"
                     type="number"
                     placeholder="es. 2025"
-                    value={anno}
-                    onChange={(e) => setAnno(e.target.value)}
+                    value={annoTrend}
+                    onChange={(e) => setAnnoTrend(e.target.value)}
                     required
                     min="2000"
                     max="2100"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="numeroCave">Numero Cave Autorizzate</Label>
+                  <Label htmlFor="numeroCaveTrend">Numero Cave</Label>
                   <Input
-                    id="numeroCave"
+                    id="numeroCaveTrend"
                     type="number"
                     placeholder="es. 150"
-                    value={numeroCave}
-                    onChange={(e) => setNumeroCave(e.target.value)}
+                    value={numeroCaveTrend}
+                    onChange={(e) => setNumeroCaveTrend(e.target.value)}
                     required
                     min="0"
                   />
@@ -310,36 +333,118 @@ export default function AdminDashboard() {
                 <Button 
                   type="submit" 
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={submitting}
+                  disabled={submittingTrend}
                 >
-                  {submitting ? (
+                  {submittingTrend ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Salvataggio...
                     </>
                   ) : (
-                    'Salva Dati'
+                    'Salva'
                   )}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          {/* Excel Upload Card */}
+          {/* Dati Provincia/Materiale */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="w-5 h-5" />
+                Dati Dettaglio
+              </CardTitle>
+              <CardDescription>
+                Cave per provincia e materiale
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleDettaglioSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="annoDettaglio">Anno</Label>
+                  <Input
+                    id="annoDettaglio"
+                    type="number"
+                    placeholder="es. 2025"
+                    value={annoDettaglio}
+                    onChange={(e) => setAnnoDettaglio(e.target.value)}
+                    required
+                    min="2000"
+                    max="2100"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="provincia">Provincia</Label>
+                  <Select value={provincia} onValueChange={setProvincia} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona provincia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROVINCE.map(p => (
+                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="materiale">Materiale</Label>
+                  <Select value={materiale} onValueChange={setMateriale} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona materiale" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MATERIALI.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="numeroCaveDettaglio">Numero Cave</Label>
+                  <Input
+                    id="numeroCaveDettaglio"
+                    type="number"
+                    placeholder="es. 25"
+                    value={numeroCaveDettaglio}
+                    onChange={(e) => setNumeroCaveDettaglio(e.target.value)}
+                    required
+                    min="0"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={submittingDettaglio}
+                >
+                  {submittingDettaglio ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Salvataggio...
+                    </>
+                  ) : (
+                    'Salva'
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Excel Upload */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Caricamento File Excel
+                Carica Excel
               </CardTitle>
               <CardDescription>
-                Carica un file Excel con le cave autorizzate (già filtrate)
+                Dettagli per comune (solo per tabella)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleExcelUpload} className="space-y-4">
                 <div>
-                  <Label htmlFor="excelAnno">Anno di Riferimento</Label>
+                  <Label htmlFor="excelAnno">Anno</Label>
                   <Input
                     id="excelAnno"
                     type="number"
@@ -352,7 +457,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="excel-file">File Excel (.xlsx)</Label>
+                  <Label htmlFor="excel-file">File Excel</Label>
                   <Input
                     id="excel-file"
                     type="file"
@@ -360,13 +465,10 @@ export default function AdminDashboard() {
                     onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
                     required
                   />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Colonne richieste: Numero Fascicolo, Comune, Provincia, Stato Cava, Materiale
-                  </p>
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-purple-600 hover:bg-purple-700"
                   disabled={uploading}
                 >
                   {uploading ? (
@@ -375,7 +477,7 @@ export default function AdminDashboard() {
                       Caricamento...
                     </>
                   ) : (
-                    'Carica File'
+                    'Carica'
                   )}
                 </Button>
               </form>
@@ -383,17 +485,14 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Info Card */}
         <Card className="mt-6 bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Informazioni</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Guida</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Usa il file Excel semplificato con solo 5 colonne essenziali</li>
-              <li>• Il file deve contenere SOLO le cave già filtrate come "AUTORIZZATA"</li>
-              <li>• Colonne richieste: Numero Fascicolo, Comune, Provincia, Stato Cava, Materiale</li>
-              <li>• I dati caricati sostituiranno quelli esistenti per lo stesso anno</li>
-              <li>• Il numero totale di cave viene aggiornato automaticamente</li>
-              <li>• Le elaborazioni grafiche si aggiorneranno nella dashboard</li>
+              <li><strong>Trend Temporale:</strong> Inserisci il totale annuale per il grafico di evoluzione temporale</li>
+              <li><strong>Dati Dettaglio:</strong> Inserisci cave per provincia e materiale (per grafici di distribuzione)</li>
+              <li><strong>Carica Excel:</strong> Carica file con dettagli per comune (visibili nella tabella dettagliata)</li>
+              <li>• I tre tipi di dati sono indipendenti e non si influenzano a vicenda</li>
             </ul>
           </CardContent>
         </Card>

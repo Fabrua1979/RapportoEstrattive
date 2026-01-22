@@ -1,0 +1,48 @@
+{
+    "title": "province_material_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "provincia": {
+            "type": "string",
+            "description": "Province code (BA, BT, BR, FG, LE, TA)"
+        },
+        "materiale": {
+            "type": "string",
+            "description": "Material type (Calcare, Calcarenite, Argilla, etc.)"
+        },
+        "numero_cave": {
+            "type": "integer",
+            "description": "Number of caves"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "anno",
+        "provincia",
+        "materiale",
+        "numero_cave",
+        "user_id"
+    ]
+}
