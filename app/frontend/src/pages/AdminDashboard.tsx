@@ -105,11 +105,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const normalizeString = (str: any): string => {
-    if (!str) return '';
-    return String(str).trim().toUpperCase();
-  };
-
   const handleExcelUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!excelFile || !excelAnno) {
@@ -131,40 +126,41 @@ export default function AdminDashboard() {
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+      console.log('Total rows:', jsonData.length);
       console.log('Sample row:', jsonData[0]);
 
-      // Filter only "AUTORIZZATA" caves and prepare data
-      const caveDetails = jsonData
-        .filter((row: any) => {
-          const statoCava = normalizeString(row['Stato Cava']);
-          return statoCava === 'AUTORIZZATA';
-        })
-        .map((row: any) => ({
+      // Prepare cave details (file already filtered for AUTORIZZATA)
+      const caveDetails = jsonData.map((row: any) => {
+        const detail = {
           anno: parseInt(excelAnno),
           numero_fascicolo: row['Numero Fascicolo'] ? String(row['Numero Fascicolo']).trim() : '',
-          azienda: row['Azienda'] ? String(row['Azienda']).trim() : '',
-          localita: row['Località'] ? String(row['Località']).trim() : '',
           comune: row['Comune'] ? String(row['Comune']).trim() : '',
           provincia: row['Provincia'] ? String(row['Provincia']).trim() : '',
-          dati_catastali: row['Dati Catastali'] ? String(row['Dati Catastali']).trim() : '',
-          stato_cava: row['Stato Cava'] ? String(row['Stato Cava']).trim() : '',
-          aperta_fino_al: row['Aperta fino al (anno)'] ? parseInt(row['Aperta fino al (anno)']) : null,
+          stato_cava: row['Stato Cava'] ? String(row['Stato Cava']).trim() : 'AUTORIZZATA',
           materiale: row['Materiale'] ? String(row['Materiale']).trim() : '',
-          numero_decreto: row['Numero decreto'] ? String(row['Numero decreto']).trim() : null,
-          data_decreto: row['Data decreto'] ? new Date(row['Data decreto']).toISOString().split('T')[0] : null,
-          scadenza_autorizzazione: row['Scadenza autorizzazione'] ? new Date(row['Scadenza autorizzazione']).toISOString().split('T')[0] : null,
+          azienda: '',
+          localita: '',
+          dati_catastali: '',
+          aperta_fino_al: null,
+          numero_decreto: null,
+          data_decreto: null,
+          scadenza_autorizzazione: null,
           created_at: new Date().toISOString()
-        }));
+        };
+        return detail;
+      });
 
       if (caveDetails.length === 0) {
         toast({
-          title: 'Attenzione',
-          description: 'Nessuna cava con stato "AUTORIZZATA" trovata nel file',
+          title: 'Errore',
+          description: 'Il file Excel è vuoto o non contiene dati validi',
           variant: 'destructive'
         });
         setUploading(false);
         return;
       }
+
+      console.log('Prepared cave details:', caveDetails.length);
 
       // Delete existing records for this year
       const existingRecords = await client.entities.cave_details.query({
@@ -172,14 +168,24 @@ export default function AdminDashboard() {
         limit: 1000
       });
 
+      console.log('Existing records to delete:', existingRecords.data.items.length);
+
       for (const record of existingRecords.data.items) {
         await client.entities.cave_details.delete({ id: record.id });
       }
 
-      // Insert new records
+      // Insert new records in batches
+      let insertedCount = 0;
       for (const detail of caveDetails) {
-        await client.entities.cave_details.create({ data: detail });
+        try {
+          await client.entities.cave_details.create({ data: detail });
+          insertedCount++;
+        } catch (err) {
+          console.error('Error inserting record:', err);
+        }
       }
+
+      console.log('Inserted records:', insertedCount);
 
       // Update or create annual summary
       const existingAnnual = await client.entities.annual_cave_data.query({
@@ -191,7 +197,7 @@ export default function AdminDashboard() {
         await client.entities.annual_cave_data.update({
           id: existingAnnual.data.items[0].id,
           data: {
-            numero_cave: caveDetails.length,
+            numero_cave: insertedCount,
             updated_at: new Date().toISOString()
           }
         });
@@ -199,7 +205,7 @@ export default function AdminDashboard() {
         await client.entities.annual_cave_data.create({
           data: {
             anno: parseInt(excelAnno),
-            numero_cave: caveDetails.length,
+            numero_cave: insertedCount,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -208,7 +214,7 @@ export default function AdminDashboard() {
 
       toast({
         title: 'File caricato con successo',
-        description: `${caveDetails.length} cave autorizzate caricate per l'anno ${excelAnno}`
+        description: `${insertedCount} cave autorizzate caricate per l'anno ${excelAnno}`
       });
 
       setExcelFile(null);
@@ -217,6 +223,7 @@ export default function AdminDashboard() {
       const fileInput = document.getElementById('excel-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     } catch (error: any) {
+      console.error('Upload error:', error);
       const detail = error?.data?.detail || error?.response?.data?.detail || error.message;
       toast({
         title: 'Errore nel caricamento',
@@ -326,7 +333,7 @@ export default function AdminDashboard() {
                 Caricamento File Excel
               </CardTitle>
               <CardDescription>
-                Carica un file Excel con i dettagli delle cave per un anno specifico
+                Carica un file Excel con le cave autorizzate (già filtrate)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -354,7 +361,7 @@ export default function AdminDashboard() {
                     required
                   />
                   <p className="text-sm text-gray-500 mt-2">
-                    Colonne richieste: Anno, Stato Cava, Provincia, Materiale
+                    Colonne richieste: Numero Fascicolo, Comune, Provincia, Stato Cava, Materiale
                   </p>
                 </div>
                 <Button 
@@ -381,11 +388,12 @@ export default function AdminDashboard() {
           <CardContent className="pt-6">
             <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Informazioni</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Il sistema filtra automaticamente solo le cave con stato "AUTORIZZATA"</li>
-              <li>• Le colonne Provincia e Materiale vengono estratte per le elaborazioni grafiche</li>
+              <li>• Usa il file Excel semplificato con solo 5 colonne essenziali</li>
+              <li>• Il file deve contenere SOLO le cave già filtrate come "AUTORIZZATA"</li>
+              <li>• Colonne richieste: Numero Fascicolo, Comune, Provincia, Stato Cava, Materiale</li>
               <li>• I dati caricati sostituiranno quelli esistenti per lo stesso anno</li>
-              <li>• Il numero totale di cave viene aggiornato automaticamente dopo il caricamento</li>
-              <li>• Le elaborazioni grafiche si aggiorneranno immediatamente nella dashboard</li>
+              <li>• Il numero totale di cave viene aggiornato automaticamente</li>
+              <li>• Le elaborazioni grafiche si aggiorneranno nella dashboard</li>
             </ul>
           </CardContent>
         </Card>
