@@ -107,6 +107,11 @@ class DatabaseManager:
                 "echo": settings.debug,
             }
 
+            # AGGIUNTA PER RENDER: Forza SSL se il database è Postgres
+            if "postgresql" in database_url:
+                engine_kwargs["connect_args"] = {"ssl": True}
+                logger.info("SSL/TLS enabled for PostgreSQL connection")
+                
             # Check if we're in a Lambda environment
             is_lambda = bool(
                 os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
