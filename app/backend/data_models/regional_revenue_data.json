@@ -1,0 +1,28 @@
+{
+    "title": "regional_revenue_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "importo_euro": {
+            "type": "number",
+            "description": "Revenue amount in euros"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "anno",
+        "importo_euro"
+    ]
+}

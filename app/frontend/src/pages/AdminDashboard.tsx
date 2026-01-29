@@ -119,6 +119,11 @@ export default function AdminDashboard() {
     materiale: '',
     numero_cave: 0
   });
+  // Form states for Incassi Regionali
+  const [revenueForm, setRevenueForm] = useState({
+    anno: 2025,
+    importo_euro: 0
+  });
 
   const chapters = [
     { id: 'cave-autorizzate', name: 'Cave Autorizzate', icon: Mountain, entity: 'annual_cave_data' },
@@ -129,7 +134,8 @@ export default function AdminDashboard() {
     { id: 'occupazione', name: 'Occupazione', icon: Users, entity: 'employment_data' },
     { id: 'prezzi', name: 'Prezzi', icon: Tag, entity: 'price_data' },
     { id: 'destinazioni', name: 'Destinazioni', icon: MapPin, entity: 'destination_data' },
-    { id: 'concorrenti', name: 'Concorrenti', icon: Target, entity: 'competitor_data' }
+    { id: 'concorrenti', name: 'Concorrenti', icon: Target, entity: 'competitor_data' },
+    { id: 'incassi-regionali', name: 'Incassi Regionali', icon: DollarSign, entity: 'regional_revenue_data' }
   ];
 
   useEffect(() => {
@@ -433,6 +439,20 @@ export default function AdminDashboard() {
       });
       toast({ title: 'Dato aggiunto con successo' });
       setCaveAutorizzateForm({ anno: 2025, provincia: '', materiale: '', numero_cave: 0 });
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAddRevenue = async () => {
+    if (!revenueForm.anno || !revenueForm.importo_euro) {
+      toast({ title: 'Errore', description: 'Compila tutti i campi obbligatori', variant: 'destructive' });
+      return;
+    }
+    try {
+      await client.entities.regional_revenue_data.create({ data: revenueForm });
+      toast({ title: 'Incasso regionale aggiunto con successo' });
+      setRevenueForm({ anno: 2025, importo_euro: 0 });
     } catch (error: any) {
       toast({ title: 'Errore', description: error.message, variant: 'destructive' });
     }
@@ -1511,6 +1531,57 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          {/* Incassi Regionali Tab */}
+          <TabsContent value="incassi-regionali">
+            <Card>
+              <CardHeader>
+                <CardTitle>Incassi Regionali - Inserimento Dati</CardTitle>
+                <CardDescription>Inserisci gli incassi regionali dalla tariffa sulle attività estrattive</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Anno *</Label>
+                    <Input
+                      type="number"
+                      value={revenueForm.anno}
+                      onChange={(e) => setRevenueForm({ ...revenueForm, anno: parseInt(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Importo (€) *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={revenueForm.importo_euro}
+                      onChange={(e) => setRevenueForm({ ...revenueForm, importo_euro: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <Button onClick={handleAddRevenue} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                    <Save className="w-4 h-4 mr-2" />
+                    Aggiungi Dato
+                  </Button>
+                  <div className="flex-1">
+                    <Label htmlFor="excel-revenue" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 h-10 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <Upload className="w-4 h-4" />
+                        Carica Excel
+                      </div>
+                    </Label>
+                    <Input
+                      id="excel-revenue"
+                      type="file"
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                      onChange={(e) => handleExcelUpload(e, 'regional_revenue_data')}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
           </TabsContent>
         </Tabs>
       </main>

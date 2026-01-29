@@ -86,6 +86,14 @@ export default function MenuPage() {
       icon: BarChart3,
       path: '/indicatori',
       color: 'amber'
+    },
+    {
+      id: 11,
+      title: 'Incassi Regionali',
+      description: 'Evoluzione annuale degli incassi dalla tariffa sulle attività estrattive',
+      icon: DollarSign,
+      path: '/incassi-regionali',
+      color: 'emerald'
     }
   ];
 
