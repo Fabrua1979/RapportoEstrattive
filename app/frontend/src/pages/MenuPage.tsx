@@ -155,7 +155,25 @@ export default function MenuPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className={`w-full bg-${chapter.color}-600 ${colors.hover}`}>
+                  <Button 
+                    className="w-full"
+                    style={{ 
+                      backgroundColor: chapter.color === 'blue' ? '#2563eb' :
+                                     chapter.color === 'green' ? '#16a34a' :
+                                     chapter.color === 'orange' ? '#ea580c' :
+                                     chapter.color === 'purple' ? '#9333ea' :
+                                     chapter.color === 'emerald' ? '#059669' :
+                                     chapter.color === 'cyan' ? '#0891b2' :
+                                     chapter.color === 'pink' ? '#db2777' :
+                                     chapter.color === 'indigo' ? '#4f46e5' :
+                                     chapter.color === 'red' ? '#dc2626' :
+                                     chapter.color === 'amber' ? '#d97706' : '#2563eb'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(chapter.path);
+                    }}
+                  >
                     Visualizza Dati
                   </Button>
                 </CardContent>

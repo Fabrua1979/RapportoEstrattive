@@ -1,42 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createClient } from '@metagptx/web-sdk';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Home, LogOut, Upload, Plus, Loader2, Database } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Plus, Settings, Mountain, Activity, TrendingUp, ShoppingCart, DollarSign, Users, Tag, MapPin, Target, BarChart3 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const client = createClient();
-
-const PROVINCE = ['BA', 'BT', 'BR', 'FG', 'LE', 'TA'];
-const MATERIALI = ['Calcare', 'Calcarenite', 'Argilla', 'Conglomerati', 'Tufo', 'Pietra', 'Sabbia', 'Ghiaia', 'Altro'];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Manual entry for trend (annual total)
-  const [annoTrend, setAnnoTrend] = useState('');
-  const [numeroCaveTrend, setNumeroCaveTrend] = useState('');
-  const [submittingTrend, setSubmittingTrend] = useState(false);
-  
-  // Manual entry for province/material data
-  const [annoDettaglio, setAnnoDettaglio] = useState('');
-  const [provincia, setProvincia] = useState('');
-  const [materiale, setMateriale] = useState('');
-  const [numeroCaveDettaglio, setNumeroCaveDettaglio] = useState('');
-  const [submittingDettaglio, setSubmittingDettaglio] = useState(false);
-  
-  // Excel upload (only for comune details)
-  const [excelAnno, setExcelAnno] = useState('');
-  const [excelFile, setExcelFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [activeChapter, setActiveChapter] = useState<string>('config');
+
+  // Configuration states
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [priceMaterials, setPriceMaterials] = useState<any[]>([]);
+  const [foreignDestinations, setForeignDestinations] = useState<any[]>([]);
+
+  // Form states
+  const [newProvince, setNewProvince] = useState('');
+  const [newMaterial, setNewMaterial] = useState('');
+  const [newPriceMaterial, setNewPriceMaterial] = useState({ name: '', parent_id: '' });
+  const [newDestination, setNewDestination] = useState('');
+
+  // Reset states
+  const [resetYear, setResetYear] = useState<number>(2025);
+  const [resetChapter, setResetChapter] = useState<string>('');
+
+  const chapters = [
+    { id: 'cave-autorizzate', name: 'Cave Autorizzate', icon: Mountain, entity: 'annual_cave_data' },
+    { id: 'cave-attive', name: 'Cave in Attività', icon: Activity, entity: 'active_caves_data' },
+    { id: 'estrazioni', name: 'Estrazioni', icon: TrendingUp, entity: 'extraction_data' },
+    { id: 'vendite', name: 'Vendite', icon: ShoppingCart, entity: 'sales_data' },
+    { id: 'dati-economici', name: 'Dati Economici', icon: DollarSign, entity: 'economic_data' },
+    { id: 'occupazione', name: 'Occupazione', icon: Users, entity: 'employment_data' },
+    { id: 'prezzi', name: 'Prezzi', icon: Tag, entity: 'price_data' },
+    { id: 'destinazioni', name: 'Destinazioni', icon: MapPin, entity: 'destination_data' },
+    { id: 'concorrenti', name: 'Concorrenti', icon: Target, entity: 'competitor_data' }
+  ];
 
   useEffect(() => {
     checkAuth();
@@ -45,15 +56,148 @@ export default function AdminDashboard() {
   const checkAuth = async () => {
     try {
       const userData = await client.auth.me();
-      if (!userData.data) {
+      if (userData.data) {
+        setUser(userData.data);
+        await loadConfigurations();
+      } else {
         navigate('/login');
-        return;
       }
-      setUser(userData.data);
     } catch (error) {
       navigate('/login');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadConfigurations = async () => {
+    try {
+      const [provincesRes, materialsRes, priceMaterialsRes, destinationsRes] = await Promise.all([
+        client.entities.config_provinces.query({}),
+        client.entities.config_materials.query({}),
+        client.entities.config_price_materials.query({}),
+        client.entities.config_foreign_destinations.query({})
+      ]);
+
+      setProvinces(provincesRes.data?.items || []);
+      setMaterials(materialsRes.data?.items || []);
+      setPriceMaterials(priceMaterialsRes.data?.items || []);
+      setForeignDestinations(destinationsRes.data?.items || []);
+    } catch (error) {
+      console.error('Error loading configurations:', error);
+    }
+  };
+
+  const handleAddProvince = async () => {
+    if (!newProvince.trim()) return;
+    try {
+      await client.entities.config_provinces.create({ data: { sigla: newProvince.toUpperCase() } });
+      toast({ title: 'Provincia aggiunta con successo' });
+      setNewProvince('');
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteProvince = async (id: number) => {
+    try {
+      await client.entities.config_provinces.delete({ id: id.toString() });
+      toast({ title: 'Provincia eliminata' });
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAddMaterial = async () => {
+    if (!newMaterial.trim()) return;
+    try {
+      await client.entities.config_materials.create({ data: { nome: newMaterial } });
+      toast({ title: 'Materiale aggiunto con successo' });
+      setNewMaterial('');
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteMaterial = async (id: number) => {
+    try {
+      await client.entities.config_materials.delete({ id: id.toString() });
+      toast({ title: 'Materiale eliminato' });
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAddPriceMaterial = async () => {
+    if (!newPriceMaterial.name.trim() || !newPriceMaterial.parent_id) return;
+    try {
+      await client.entities.config_price_materials.create({
+        data: {
+          nome: newPriceMaterial.name,
+          materiale_generale_id: parseInt(newPriceMaterial.parent_id)
+        }
+      });
+      toast({ title: 'Materiale prezzo aggiunto con successo' });
+      setNewPriceMaterial({ name: '', parent_id: '' });
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleDeletePriceMaterial = async (id: number) => {
+    try {
+      await client.entities.config_price_materials.delete({ id: id.toString() });
+      toast({ title: 'Materiale prezzo eliminato' });
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAddDestination = async () => {
+    if (!newDestination.trim()) return;
+    try {
+      await client.entities.config_foreign_destinations.create({ data: { paese: newDestination } });
+      toast({ title: 'Destinazione estera aggiunta con successo' });
+      setNewDestination('');
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteDestination = async (id: number) => {
+    try {
+      await client.entities.config_foreign_destinations.delete({ id: id.toString() });
+      toast({ title: 'Destinazione estera eliminata' });
+      await loadConfigurations();
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleResetData = async () => {
+    if (!resetYear || !resetChapter) {
+      toast({ title: 'Errore', description: 'Seleziona anno e capitolo', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const response = await client.apiCall.invoke({
+        url: '/api/v1/data-reset/reset',
+        method: 'POST',
+        data: { anno: resetYear, capitolo: resetChapter }
+      });
+
+      toast({ title: 'Successo', description: `Dati ${resetChapter} per anno ${resetYear} resettati` });
+      setResetYear(2025);
+      setResetChapter('');
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -62,207 +206,10 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
-  const handleTrendSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmittingTrend(true);
-
-    try {
-      const existingData = await client.entities.annual_cave_data.query({
-        query: { anno: parseInt(annoTrend) },
-        limit: 1
-      });
-
-      if (existingData.data.items.length > 0) {
-        await client.entities.annual_cave_data.update({
-          id: existingData.data.items[0].id,
-          data: {
-            numero_cave: parseInt(numeroCaveTrend),
-            updated_at: new Date().toISOString()
-          }
-        });
-        toast({
-          title: 'Trend aggiornato',
-          description: `Anno ${annoTrend} aggiornato con ${numeroCaveTrend} cave`
-        });
-      } else {
-        await client.entities.annual_cave_data.create({
-          data: {
-            anno: parseInt(annoTrend),
-            numero_cave: parseInt(numeroCaveTrend),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        });
-        toast({
-          title: 'Trend inserito',
-          description: `Anno ${annoTrend} creato con ${numeroCaveTrend} cave`
-        });
-      }
-
-      setAnnoTrend('');
-      setNumeroCaveTrend('');
-    } catch (error: any) {
-      const detail = error?.data?.detail || error?.response?.data?.detail || error.message;
-      toast({
-        title: 'Errore',
-        description: detail,
-        variant: 'destructive'
-      });
-    } finally {
-      setSubmittingTrend(false);
-    }
-  };
-
-  const handleDettaglioSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmittingDettaglio(true);
-
-    try {
-      const existingData = await client.entities.province_material_data.query({
-        query: { 
-          anno: parseInt(annoDettaglio),
-          provincia: provincia,
-          materiale: materiale
-        },
-        limit: 1
-      });
-
-      if (existingData.data.items.length > 0) {
-        await client.entities.province_material_data.update({
-          id: existingData.data.items[0].id,
-          data: {
-            numero_cave: parseInt(numeroCaveDettaglio),
-            updated_at: new Date().toISOString()
-          }
-        });
-        toast({
-          title: 'Dati aggiornati',
-          description: `${provincia} - ${materiale} (${annoDettaglio}): ${numeroCaveDettaglio} cave`
-        });
-      } else {
-        await client.entities.province_material_data.create({
-          data: {
-            anno: parseInt(annoDettaglio),
-            provincia: provincia,
-            materiale: materiale,
-            numero_cave: parseInt(numeroCaveDettaglio),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        });
-        toast({
-          title: 'Dati inseriti',
-          description: `${provincia} - ${materiale} (${annoDettaglio}): ${numeroCaveDettaglio} cave`
-        });
-      }
-
-      setNumeroCaveDettaglio('');
-    } catch (error: any) {
-      const detail = error?.data?.detail || error?.response?.data?.detail || error.message;
-      toast({
-        title: 'Errore',
-        description: detail,
-        variant: 'destructive'
-      });
-    } finally {
-      setSubmittingDettaglio(false);
-    }
-  };
-
-  const handleExcelUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!excelFile || !excelAnno) {
-      toast({
-        title: 'Errore',
-        description: 'Seleziona un file Excel e specifica l\'anno',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const data = await excelFile.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-      console.log('Total rows:', jsonData.length);
-
-      const caveDetails = jsonData.map((row: any) => ({
-        anno: parseInt(excelAnno),
-        numero_fascicolo: row['Numero Fascicolo'] ? String(row['Numero Fascicolo']).trim() : '',
-        comune: row['Comune'] ? String(row['Comune']).trim() : '',
-        provincia: row['Provincia'] ? String(row['Provincia']).trim() : '',
-        stato_cava: row['Stato Cava'] ? String(row['Stato Cava']).trim() : 'AUTORIZZATA',
-        materiale: row['Materiale'] ? String(row['Materiale']).trim() : '',
-        azienda: '',
-        localita: '',
-        dati_catastali: '',
-        aperta_fino_al: null,
-        numero_decreto: null,
-        data_decreto: null,
-        scadenza_autorizzazione: null,
-        created_at: new Date().toISOString()
-      }));
-
-      if (caveDetails.length === 0) {
-        toast({
-          title: 'Errore',
-          description: 'Il file Excel è vuoto',
-          variant: 'destructive'
-        });
-        setUploading(false);
-        return;
-      }
-
-      const existingRecords = await client.entities.cave_details.query({
-        query: { anno: parseInt(excelAnno) },
-        limit: 1000
-      });
-
-      for (const record of existingRecords.data.items) {
-        await client.entities.cave_details.delete({ id: record.id });
-      }
-
-      let insertedCount = 0;
-      for (const detail of caveDetails) {
-        try {
-          await client.entities.cave_details.create({ data: detail });
-          insertedCount++;
-        } catch (err) {
-          console.error('Error inserting record:', err);
-        }
-      }
-
-      toast({
-        title: 'File caricato',
-        description: `${insertedCount} cave caricate per l'anno ${excelAnno}. I dettagli per comune sono ora disponibili nella dashboard.`
-      });
-
-      setExcelFile(null);
-      setExcelAnno('');
-      const fileInput = document.getElementById('excel-file') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      const detail = error?.data?.detail || error?.response?.data?.detail || error.message;
-      toast({
-        title: 'Errore nel caricamento',
-        description: detail,
-        variant: 'destructive'
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Caricamento...</div>
       </div>
     );
   }
@@ -270,232 +217,261 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Pannello Amministrativo</h1>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate('/menu')}>
-              <Home className="w-4 h-4 mr-2" />
-              Menu
-            </Button>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Esci
-            </Button>
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" onClick={() => navigate('/menu')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Menu
+              </Button>
+              <h1 className="text-3xl font-bold text-gray-800">Pannello Amministrativo</h1>
+            </div>
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Benvenuto, {user?.email}</h2>
-          <p className="text-gray-600">Gestisci i dati delle cave autorizzate</p>
-        </div>
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <Tabs value={activeChapter} onValueChange={setActiveChapter}>
+          <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsTrigger value="config">
+              <Settings className="w-4 h-4 mr-2" />
+              Configurazione
+            </TabsTrigger>
+            {chapters.slice(0, 4).map(chapter => {
+              const Icon = chapter.icon;
+              return (
+                <TabsTrigger key={chapter.id} value={chapter.id}>
+                  <Icon className="w-4 h-4 mr-2" />
+                  {chapter.name}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Trend Temporale */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Trend Temporale
-              </CardTitle>
-              <CardDescription>
-                Numero totale cave per anno (grafico trend)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleTrendSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="annoTrend">Anno</Label>
-                  <Input
-                    id="annoTrend"
-                    type="number"
-                    placeholder="es. 2025"
-                    value={annoTrend}
-                    onChange={(e) => setAnnoTrend(e.target.value)}
-                    required
-                    min="2000"
-                    max="2100"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="numeroCaveTrend">Numero Cave</Label>
-                  <Input
-                    id="numeroCaveTrend"
-                    type="number"
-                    placeholder="es. 150"
-                    value={numeroCaveTrend}
-                    onChange={(e) => setNumeroCaveTrend(e.target.value)}
-                    required
-                    min="0"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={submittingTrend}
-                >
-                  {submittingTrend ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Salvataggio...
-                    </>
-                  ) : (
-                    'Salva'
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+          <TabsList className="grid w-full grid-cols-5 mb-8">
+            {chapters.slice(4).map(chapter => {
+              const Icon = chapter.icon;
+              return (
+                <TabsTrigger key={chapter.id} value={chapter.id}>
+                  <Icon className="w-4 h-4 mr-2" />
+                  {chapter.name}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-          {/* Dati Provincia/Materiale */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="w-5 h-5" />
-                Dati Dettaglio
-              </CardTitle>
-              <CardDescription>
-                Cave per provincia e materiale
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleDettaglioSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="annoDettaglio">Anno</Label>
-                  <Input
-                    id="annoDettaglio"
-                    type="number"
-                    placeholder="es. 2025"
-                    value={annoDettaglio}
-                    onChange={(e) => setAnnoDettaglio(e.target.value)}
-                    required
-                    min="2000"
-                    max="2100"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="provincia">Provincia</Label>
-                  <Select value={provincia} onValueChange={setProvincia} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleziona provincia" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROVINCE.map(p => (
-                        <SelectItem key={p} value={p}>{p}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="materiale">Materiale</Label>
-                  <Select value={materiale} onValueChange={setMateriale} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleziona materiale" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MATERIALI.map(m => (
-                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="numeroCaveDettaglio">Numero Cave</Label>
-                  <Input
-                    id="numeroCaveDettaglio"
-                    type="number"
-                    placeholder="es. 25"
-                    value={numeroCaveDettaglio}
-                    onChange={(e) => setNumeroCaveDettaglio(e.target.value)}
-                    required
-                    min="0"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  disabled={submittingDettaglio}
-                >
-                  {submittingDettaglio ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Salvataggio...
-                    </>
-                  ) : (
-                    'Salva'
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+          {/* Configuration Tab */}
+          <TabsContent value="config">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Province */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Province</CardTitle>
+                  <CardDescription>Gestisci le province della Puglia</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Sigla (es. BA)"
+                      value={newProvince}
+                      onChange={(e) => setNewProvince(e.target.value)}
+                      maxLength={2}
+                    />
+                    <Button onClick={handleAddProvince}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {provinces.map((prov) => (
+                      <div key={prov.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span>{prov.sigla}</span>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteProvince(prov.id)}>
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Excel Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Carica Excel
-              </CardTitle>
-              <CardDescription>
-                Dettagli per comune (solo per tabella)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleExcelUpload} className="space-y-4">
-                <div>
-                  <Label htmlFor="excelAnno">Anno</Label>
-                  <Input
-                    id="excelAnno"
-                    type="number"
-                    placeholder="es. 2025"
-                    value={excelAnno}
-                    onChange={(e) => setExcelAnno(e.target.value)}
-                    required
-                    min="2000"
-                    max="2100"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="excel-file">File Excel</Label>
-                  <Input
-                    id="excel-file"
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-purple-600 hover:bg-purple-700"
-                  disabled={uploading}
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Caricamento...
-                    </>
-                  ) : (
-                    'Carica'
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+              {/* Materials */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Materiali</CardTitle>
+                  <CardDescription>Gestisci i materiali estrattivi</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nome materiale"
+                      value={newMaterial}
+                      onChange={(e) => setNewMaterial(e.target.value)}
+                    />
+                    <Button onClick={handleAddMaterial}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {materials.map((mat) => (
+                      <div key={mat.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span>{mat.nome}</span>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(mat.id)}>
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-        <Card className="mt-6 bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Guida</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li><strong>Trend Temporale:</strong> Inserisci il totale annuale per il grafico di evoluzione temporale</li>
-              <li><strong>Dati Dettaglio:</strong> Inserisci cave per provincia e materiale (per grafici di distribuzione)</li>
-              <li><strong>Carica Excel:</strong> Carica file con dettagli per comune (visibili nella tabella dettagliata)</li>
-              <li>• I tre tipi di dati sono indipendenti e non si influenzano a vicenda</li>
-            </ul>
-          </CardContent>
-        </Card>
+              {/* Price Materials */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Materiali Prezzi</CardTitle>
+                  <CardDescription>Classi specifiche collegate ai materiali generali</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Nome classe (es. Calcare 1a scelta)"
+                      value={newPriceMaterial.name}
+                      onChange={(e) => setNewPriceMaterial({ ...newPriceMaterial, name: e.target.value })}
+                    />
+                    <Select
+                      value={newPriceMaterial.parent_id}
+                      onValueChange={(value) => setNewPriceMaterial({ ...newPriceMaterial, parent_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona materiale generale" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {materials.map((mat) => (
+                          <SelectItem key={mat.id} value={mat.id.toString()}>
+                            {mat.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleAddPriceMaterial} className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Aggiungi
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {priceMaterials.map((pm) => {
+                      const parent = materials.find(m => m.id === pm.materiale_generale_id);
+                      return (
+                        <div key={pm.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <div>
+                            <div className="font-medium">{pm.nome}</div>
+                            <div className="text-sm text-gray-500">→ {parent?.nome}</div>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => handleDeletePriceMaterial(pm.id)}>
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Foreign Destinations */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Destinazioni Estere</CardTitle>
+                  <CardDescription>Gestisci i paesi di destinazione</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nome paese"
+                      value={newDestination}
+                      onChange={(e) => setNewDestination(e.target.value)}
+                    />
+                    <Button onClick={handleAddDestination}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {foreignDestinations.map((dest) => (
+                      <div key={dest.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span>{dest.paese}</span>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteDestination(dest.id)}>
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Reset Data */}
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Reset Dati</CardTitle>
+                  <CardDescription>Elimina tutti i dati di un capitolo per un anno specifico</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Anno</Label>
+                      <Input
+                        type="number"
+                        value={resetYear}
+                        onChange={(e) => setResetYear(parseInt(e.target.value))}
+                        min={2000}
+                        max={2100}
+                      />
+                    </div>
+                    <div>
+                      <Label>Capitolo</Label>
+                      <Select value={resetChapter} onValueChange={setResetChapter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleziona capitolo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {chapters.map((ch) => (
+                            <SelectItem key={ch.id} value={ch.entity}>
+                              {ch.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button onClick={handleResetData} variant="destructive" className="w-full">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Reset Dati
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Chapter Tabs - To be implemented with forms similar to Cave Autorizzate */}
+          {chapters.map(chapter => (
+            <TabsContent key={chapter.id} value={chapter.id}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{chapter.name}</CardTitle>
+                  <CardDescription>
+                    Form di inserimento dati per {chapter.name} - In sviluppo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">
+                    Questa sezione conterrà i form per l'inserimento manuale e upload Excel per {chapter.name}.
+                    Implementazione in corso...
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
       </main>
     </div>
   );
