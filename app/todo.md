@@ -1,135 +1,108 @@
-# App Infografica Attività Estrattive Puglia - Piano di Sviluppo Completato
+# App Infografica Attività Estrattive Puglia - Piano di Sviluppo
 
-## ✅ FASE 1 - Homepage e Backend Base (COMPLETATA)
-- ✅ Homepage aggiornata con testo introduttivo L.R.22/2019
-- ✅ Pulsante "Torna al Portale PugliaCon" aggiunto
-- ✅ Sistema configurazione backend creato (province, materiali, materiali prezzi, destinazioni estere)
-- ✅ Funzione reset dati per anno e sezione implementata
+## Design Guidelines
 
-## ✅ FASE 2 - Database Tables (COMPLETATA)
-Tutte le tabelle create con successo:
-- ✅ config_provinces (configurazione province)
-- ✅ config_materials (configurazione materiali)
-- ✅ config_price_materials (configurazione materiali prezzi con collegamento a materiali generali)
-- ✅ config_foreign_destinations (configurazione destinazioni estere)
-- ✅ active_caves_data (Capitolo 2)
-- ✅ extraction_data (Capitolo 3)
-- ✅ sales_data (Capitolo 4)
-- ✅ economic_data (Capitolo 5)
-- ✅ employment_data (Capitolo 6)
-- ✅ price_data (Capitolo 7)
-- ✅ destination_data (Capitolo 8)
-- ✅ competitor_data (Capitolo 9)
+### Design References
+- **Gov.it Dashboard Style**: Clean, professional, institutional
+- **Style**: Modern Data Visualization + Professional Dashboard
 
-## ✅ FASE 3 - Menu Principale (COMPLETATA)
-- ✅ Menu aggiornato con tutti i 10 capitoli
-- ✅ Icone e colori distintivi per ogni capitolo
-- ✅ Routing completo per tutte le pagine
+### Color Palette
+- Primary: #0066CC (Institutional Blue - headers, CTAs)
+- Secondary: #003D7A (Dark Blue - navigation)
+- Accent: #28A745 (Green - success states, positive trends)
+- Background: #F8F9FA (Light Gray)
+- Cards: #FFFFFF (White)
+- Text: #212529 (Dark Gray), #6C757D (Medium Gray - secondary)
+- Borders: #DEE2E6 (Light Gray)
 
-## ✅ FASE 4 - Implementazione Capitoli Frontend (COMPLETATA)
+### Typography
+- Heading1: Inter font-weight 700 (32px)
+- Heading2: Inter font-weight 600 (24px)
+- Heading3: Inter font-weight 600 (20px)
+- Body: Inter font-weight 400 (16px)
+- Small: Inter font-weight 400 (14px)
 
-### Capitolo 1 - Cave Autorizzate ✅
-- Grafico evoluzione temporale
-- Distribuzione per provincia e materiale
-- Tabella dettagliata comuni espandibile
-- Export Excel multipli
-- Analisi AI automatica
+### Key Component Styles
+- **Cards**: White background, subtle shadow, 8px rounded corners
+- **Buttons**: Blue primary (#0066CC), white text, 6px rounded
+- **Charts**: Professional color scheme with blues and greens
+- **Forms**: Clean inputs with bottom border focus states
 
-### Capitolo 2 - Cave in Attività ✅
-- Grafico evoluzione cave attive vs autorizzate
-- Grafico percentuale cave attive su autorizzate
-- Distribuzione per provincia e materiale
-- Tabella comuni espandibile con dettagli cave
-- Export Excel per tutti i grafici
+### Images to Generate
+1. **hero-puglia-landscape.jpg** - Panoramic view of Puglia quarries landscape (Style: photorealistic, aerial view)
+2. **data-visualization-icon.png** - Modern data analytics icon for homepage (Style: minimalist, vector-style)
+3. **admin-dashboard-icon.png** - Admin panel icon (Style: minimalist, blue theme)
+4. **quarry-equipment.jpg** - Industrial quarry equipment background (Style: photorealistic, professional)
 
-### Capitolo 3 - Estrazioni ✅
-- Grafico evoluzione estrazioni totali (m³)
-- Distribuzione per provincia
-- Distribuzione per materiale (pie chart)
-- Tabella comuni espandibile
-- Export Excel
+---
 
-### Capitolo 4 - Vendite ✅
-- Grafico evoluzione vendite vs estrazioni
-- Grafico percentuale venduto su estratto
-- Distribuzione per provincia e materiale
-- Export Excel
+## Database Schema
 
-### Capitolo 5 - Dati Economici ✅
-- Grafico evoluzione fatturato e utile netto
-- Tabella dettagliata annuale (fatturato, costi, utile lordo, utile netto)
-- Distribuzione fatturato per provincia e materiale
-- Export Excel
+### Table: annual_cave_data
+- id (Integer, autoincrement, primary key)
+- user_id (String, required)
+- anno (Integer, required, unique per user)
+- numero_cave (Integer, required)
+- created_at (DateTime)
+- updated_at (DateTime)
+- create_only: true
 
-### Capitolo 6 - Occupazione ✅
-- Grafico evoluzione occupati
-- Distribuzione per provincia e materiale
-- Export Excel
+### Table: cave_details
+- id (Integer, autoincrement, primary key)
+- user_id (String, required)
+- anno (Integer, required)
+- numero_fascicolo (String)
+- azienda (String)
+- localita (String)
+- comune (String)
+- provincia (String)
+- dati_catastali (String)
+- stato_cava (String)
+- aperta_fino_al (Integer, nullable)
+- materiale (String)
+- numero_decreto (String, nullable)
+- data_decreto (String, nullable)
+- scadenza_autorizzazione (String, nullable)
+- created_at (DateTime)
+- create_only: true
 
-### Capitolo 7 - Prezzi ✅
-- Selettore classe materiale (configurabile da backend)
-- Grafico evoluzione prezzo per classe selezionata (€/m³)
-- Export Excel
+---
 
-### Capitolo 8 - Destinazioni ✅
-- Grafico evoluzione destinazioni (locali/nazionali/estere)
-- Distribuzione destinazioni (pie chart)
-- Dettagli destinazioni estere per anno
-- Export Excel
+## Development Tasks
 
-### Capitolo 9 - Concorrenti ✅
-- Grafico evoluzione 5 tipologie concorrenti
-- Distribuzione per provincia e materiale
-- Export Excel
+### Phase 1: Backend Setup
+1. ✅ Create database tables (annual_cave_data, cave_details)
+2. ✅ Generate images for the application
+3. ✅ Install frontend dependencies
 
-### Capitolo 10 - Indicatori ✅
-- 4 KPI calcolati automaticamente:
-  - Utile Lordo/Fatturato (%)
-  - Utile Netto/Fatturato (%)
-  - Fatturato/Dipendenti (€)
-  - Fatturato/Vendite (€/m³)
-- Switch tra vista generale e per materiale
-- Export Excel
+### Phase 2: Frontend Core Pages
+4. Homepage/Presentazione - Hero section with title, description, CTA button
+5. Menu/Indice page - Navigation cards for different chapters
+6. Auth pages - Login page and callback handler
 
-## ✅ FASE 5 - Backend Services e Routers (COMPLETATA)
-- ✅ Auto-generati da BackendManager per tutti i capitoli
-- ✅ Router config.py per gestione configurazioni
-- ✅ Router data_reset.py per reset dati
+### Phase 3: Admin Panel
+7. Admin dashboard layout with navigation
+8. Form for manual entry (anno, numero_cave) with update/replace logic
+9. Excel upload component with year selector
+10. Excel parsing and validation logic
+11. Data submission to backend
 
-## ✅ Test e Build (COMPLETATA)
-- ✅ Lint: 0 errori, 0 warning
-- ✅ Build: Completato in 9.08s
-- ✅ Bundle size: 1,016.28 kB (302.49 kB gzip)
+### Phase 4: Public Dashboard "Cave Autorizzate"
+12. Year selector dropdown
+13. Main chart: temporal trend of authorized caves by year
+14. Province distribution chart (filtered by selected year)
+15. Material distribution chart (filtered by selected year)
+16. Summary statistics table
+17. AI-generated commentary (use deepseek-v3.2) based on data
 
-## Funzionalità Implementate
+### Phase 5: Data Processing & Integration
+18. Backend route for Excel parsing and cave filtering
+19. Frontend data fetching and state management
+20. Chart components with Recharts library
+21. Responsive design and animations
 
-### Sistema Configurazione Dinamica
-- Province configurabili (BA, BT, BR, FG, LE, TA)
-- Materiali configurabili
-- Materiali prezzi con collegamento a materiali generali
-- Destinazioni estere configurabili
-
-### Gestione Dati
-- Upload file Excel per comuni
-- Inserimento manuale dati per tutti i capitoli
-- Reset dati per anno e sezione
-- Export Excel per ogni grafico/tabella
-
-### Visualizzazioni
-- Grafici interattivi (LineChart, BarChart, PieChart)
-- Tabelle espandibili con dettagli
-- Selettori anno dinamici
-- Analisi AI automatica (dove applicabile)
-
-### Unità di Misura
-- m³ per estrazioni e vendite
-- € per fatturato, costi, utili
-- €/m³ per prezzi
-- Numero per cave, occupati, concorrenti
-
-## Note Tecniche
-- Frontend: React + TypeScript + Shadcn-UI + Recharts
-- Backend: FastAPI + SQLAlchemy + Atoms Cloud
-- Database: PostgreSQL (via Atoms Cloud)
-- Autenticazione: Atoms Auth
-- File Upload: Excel parsing con xlsx library
+### Phase 6: Testing & Polish
+22. Test authentication flow
+23. Test data upload and visualization
+24. Verify year switching functionality
+25. Final lint check and deployment

@@ -1,21 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Settings } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 export default function HomePage() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-      {/* Discrete Admin Access Button */}
-      <button
-        onClick={() => navigate('/login')}
-        className="fixed bottom-4 right-4 z-50 p-3 bg-gray-800/50 hover:bg-gray-700/70 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm"
-        title="Admin Access"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
-
       {/* Hero Section */}
       <div className="relative h-screen flex items-center justify-center overflow-hidden">
         <div 
@@ -42,8 +33,9 @@ export default function HomePage() {
             Regione Puglia
           </h2>
           
-          <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Su questo applicativo è possibile consultare le elaborazioni principali sui dati derivanti dalle schede statistiche sulle attività estrattive, raccolte dalle ditte pugliesi del settore ai sensi dell'art. 17 comma 6 della L.R.22/2019.
+          <p className="text-xl text-gray-200 mb-12 max-w-2xl mx-auto">
+            Sistema di monitoraggio e analisi dinamica delle attività estrattive regionali. 
+            Visualizza dati aggiornati, statistiche e trend delle cave autorizzate in Puglia.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -57,10 +49,10 @@ export default function HomePage() {
             <Button 
               size="lg"
               variant="outline"
-              onClick={() => window.open('https://pugliacon.regione.puglia.it/web/sit-puglia-ambiente/finalita-e-contenuti', '_blank')}
+              onClick={() => navigate('/login')}
               className="bg-white/10 backdrop-blur-sm border-white text-white hover:bg-white/20 px-8 py-6 text-lg"
             >
-              Torna al Portale PugliaCon - Attività Estrattive
+              Area Amministrativa
             </Button>
           </div>
         </div>
