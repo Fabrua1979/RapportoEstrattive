@@ -1,12 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Settings } from 'lucide-react';
 
 export default function HomePage() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+      {/* Discrete Admin Access Button */}
+      <button
+        onClick={() => navigate('/login')}
+        className="fixed bottom-4 right-4 z-50 p-3 bg-gray-800/50 hover:bg-gray-700/70 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm"
+        title="Admin Access"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
+
       {/* Hero Section */}
       <div className="relative h-screen flex items-center justify-center overflow-hidden">
         <div 
