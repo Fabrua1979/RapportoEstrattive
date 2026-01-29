@@ -126,16 +126,16 @@ export default function AdminDashboard() {
   });
 
   const chapters = [
-    { id: 'cave-autorizzate', name: 'Cave Autorizzate', icon: Mountain, entity: 'annual_cave_data' },
-    { id: 'cave-attive', name: 'Cave in Attività', icon: Activity, entity: 'active_caves_data' },
-    { id: 'estrazioni', name: 'Estrazioni', icon: TrendingUp, entity: 'extraction_data' },
-    { id: 'vendite', name: 'Vendite', icon: ShoppingCart, entity: 'sales_data' },
-    { id: 'dati-economici', name: 'Dati Economici', icon: DollarSign, entity: 'economic_data' },
-    { id: 'occupazione', name: 'Occupazione', icon: Users, entity: 'employment_data' },
-    { id: 'prezzi', name: 'Prezzi', icon: Tag, entity: 'price_data' },
-    { id: 'destinazioni', name: 'Destinazioni', icon: MapPin, entity: 'destination_data' },
-    { id: 'concorrenti', name: 'Concorrenti', icon: Target, entity: 'competitor_data' },
-    { id: 'incassi-regionali', name: 'Incassi Regionali', icon: DollarSign, entity: 'regional_revenue_data' }
+    { id: 'cave-autorizzate', name: 'Cave Autorizzate', icon: Mountain, entity: 'cave_autorizzate' },
+    { id: 'cave-attive', name: 'Cave in Attività', icon: Activity, entity: 'cave_attive' },
+    { id: 'estrazioni', name: 'Estrazioni', icon: TrendingUp, entity: 'estrazioni' },
+    { id: 'vendite', name: 'Vendite', icon: ShoppingCart, entity: 'vendite' },
+    { id: 'dati-economici', name: 'Dati Economici', icon: DollarSign, entity: 'dati_economici' },
+    { id: 'occupazione', name: 'Occupazione', icon: Users, entity: 'occupazione' },
+    { id: 'prezzi', name: 'Prezzi', icon: Tag, entity: 'prezzi' },
+    { id: 'destinazioni', name: 'Destinazioni', icon: MapPin, entity: 'destinazioni' },
+    { id: 'concorrenti', name: 'Concorrenti', icon: Target, entity: 'concorrenti' },
+    { id: 'incassi-regionali', name: 'Incassi Regionali', icon: DollarSign, entity: 'incassi_regionali' }
   ];
 
   useEffect(() => {

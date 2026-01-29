@@ -42,7 +42,8 @@ async def reset_data(
             "occupazione": [Employment_data],
             "prezzi": [Price_data],
             "destinazioni": [Destination_data],
-            "concorrenti": [Competitor_data]
+            "concorrenti": [Competitor_data],
+            "incassi_regionali": [Regional_revenue_data]
         }
         
         if data.chapter not in chapter_map:
