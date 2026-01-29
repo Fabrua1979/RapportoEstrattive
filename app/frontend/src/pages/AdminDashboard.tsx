@@ -113,6 +113,7 @@ export default function AdminDashboard() {
   });
 
   const chapters = [
+    { id: 'cave-autorizzate', name: 'Cave Autorizzate', icon: Mountain, entity: 'annual_cave_data' },
     { id: 'cave-attive', name: 'Cave in Attività', icon: Activity, entity: 'active_caves_data' },
     { id: 'estrazioni', name: 'Estrazioni', icon: TrendingUp, entity: 'extraction_data' },
     { id: 'vendite', name: 'Vendite', icon: ShoppingCart, entity: 'sales_data' },
@@ -471,7 +472,7 @@ export default function AdminDashboard() {
             })}
           </TabsList>
 
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             {chapters.slice(4).map(chapter => {
               const Icon = chapter.icon;
               return (
@@ -667,6 +668,127 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+          {/* Cave Autorizzate Tab */}
+          <TabsContent value="cave-autorizzate">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cave Autorizzate - Inserimento Dati</CardTitle>
+                <CardDescription>
+                  Inserisci i dati delle cave autorizzate. Puoi inserire dati aggregati per anno o caricare file Excel con dati comunali dettagliati.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 mb-2">📋 Come Inserire i Dati</h3>
+                  <div className="text-sm text-blue-800 space-y-2">
+                    <p><strong>Opzione 1 - Inserimento Manuale:</strong> Usa il form sottostante per inserire dati aggregati per provincia e materiale</p>
+                    <p><strong>Opzione 2 - Upload Excel:</strong> Carica un file Excel con dati dettagliati per comune. Il file deve contenere le colonne: anno, provincia, materiale, comune, cave_autorizzate</p>
+                    <p className="text-xs mt-2">💡 <strong>Nota:</strong> I dati inseriti qui saranno visualizzati nella pagina "Cave Autorizzate" del menu principale</p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <Label>Anno</Label>
+                    <Input
+                      type="number"
+                      defaultValue={2025}
+                      id="cave-autorizzate-anno"
+                    />
+                  </div>
+                  <div>
+                    <Label>Provincia *</Label>
+                    <Select>
+                      <SelectTrigger id="cave-autorizzate-provincia">
+                        <SelectValue placeholder="Seleziona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {provinces.map((p) => (
+                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Materiale *</Label>
+                    <Select>
+                      <SelectTrigger id="cave-autorizzate-materiale">
+                        <SelectValue placeholder="Seleziona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {materials.map((m) => (
+                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Comune (opzionale)</Label>
+                    <Input
+                      type="text"
+                      placeholder="Nome comune"
+                      id="cave-autorizzate-comune"
+                    />
+                  </div>
+                  <div>
+                    <Label>Cave Autorizzate</Label>
+                    <Input
+                      type="number"
+                      defaultValue={0}
+                      id="cave-autorizzate-numero"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Button 
+                    onClick={async () => {
+                      const anno = parseInt((document.getElementById('cave-autorizzate-anno') as HTMLInputElement).value);
+                      const provincia = (document.getElementById('cave-autorizzate-provincia') as HTMLInputElement).textContent?.trim();
+                      const materiale = (document.getElementById('cave-autorizzate-materiale') as HTMLInputElement).textContent?.trim();
+                      const comune = (document.getElementById('cave-autorizzate-comune') as HTMLInputElement).value || null;
+                      const cave_autorizzate = parseInt((document.getElementById('cave-autorizzate-numero') as HTMLInputElement).value);
+
+                      if (!provincia || !materiale) {
+                        toast({ title: 'Errore', description: 'Compila tutti i campi obbligatori', variant: 'destructive' });
+                        return;
+                      }
+
+                      try {
+                        await client.entities.annual_cave_data.create({
+                          data: { anno, provincia, materiale, comune, cave_autorizzate }
+                        });
+                        toast({ title: 'Dato aggiunto con successo' });
+                        (document.getElementById('cave-autorizzate-comune') as HTMLInputElement).value = '';
+                        (document.getElementById('cave-autorizzate-numero') as HTMLInputElement).value = '0';
+                      } catch (error: any) {
+                        toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+                      }
+                    }}
+                    className="flex-1"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Aggiungi Dato
+                  </Button>
+                  <div className="flex-1">
+                    <Label htmlFor="excel-cave-autorizzate" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 h-10 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <Upload className="w-4 h-4" />
+                        Carica Excel
+                      </div>
+                    </Label>
+                    <Input
+                      id="excel-cave-autorizzate"
+                      type="file"
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                      onChange={(e) => handleExcelUpload(e, 'annual_cave_data')}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Cave Attive Tab */}
