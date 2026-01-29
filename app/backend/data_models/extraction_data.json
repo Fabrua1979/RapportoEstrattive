@@ -1,0 +1,48 @@
+{
+    "title": "extraction_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "provincia": {
+            "type": "string",
+            "description": "Province"
+        },
+        "materiale": {
+            "type": "string",
+            "description": "Material"
+        },
+        "volume_m3": {
+            "type": "number",
+            "description": "Extraction volume in m3"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "anno",
+        "provincia",
+        "materiale",
+        "volume_m3",
+        "user_id"
+    ]
+}

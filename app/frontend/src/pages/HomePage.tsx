@@ -33,9 +33,8 @@ export default function HomePage() {
             Regione Puglia
           </h2>
           
-          <p className="text-xl text-gray-200 mb-12 max-w-2xl mx-auto">
-            Sistema di monitoraggio e analisi dinamica delle attività estrattive regionali. 
-            Visualizza dati aggiornati, statistiche e trend delle cave autorizzate in Puglia.
+          <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+            Su questo applicativo è possibile consultare le elaborazioni principali sui dati derivanti dalle schede statistiche sulle attività estrattive, raccolte dalle ditte pugliesi del settore ai sensi dell'art. 17 comma 6 della L.R.22/2019.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -49,10 +48,10 @@ export default function HomePage() {
             <Button 
               size="lg"
               variant="outline"
-              onClick={() => navigate('/login')}
+              onClick={() => window.open('https://pugliacon.regione.puglia.it/web/sit-puglia-ambiente/finalita-e-contenuti', '_blank')}
               className="bg-white/10 backdrop-blur-sm border-white text-white hover:bg-white/20 px-8 py-6 text-lg"
             >
-              Area Amministrativa
+              Torna al Portale PugliaCon - Attività Estrattive
             </Button>
           </div>
         </div>

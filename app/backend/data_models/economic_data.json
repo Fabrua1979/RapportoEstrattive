@@ -1,0 +1,63 @@
+{
+    "title": "economic_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "provincia": {
+            "type": "string",
+            "description": "Province"
+        },
+        "materiale": {
+            "type": "string",
+            "description": "Material"
+        },
+        "fatturato": {
+            "type": "number",
+            "description": "Revenue in euros"
+        },
+        "costi": {
+            "type": "number",
+            "description": "Costs in euros"
+        },
+        "utile_lordo": {
+            "type": "number",
+            "description": "Gross profit in euros"
+        },
+        "utile_netto": {
+            "type": "number",
+            "description": "Net profit in euros"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "anno",
+        "provincia",
+        "materiale",
+        "fatturato",
+        "costi",
+        "utile_lordo",
+        "utile_netto",
+        "user_id"
+    ]
+}

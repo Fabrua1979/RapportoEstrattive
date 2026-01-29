@@ -1,0 +1,185 @@
+[
+  {
+    "title": "config_provinces",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "code": {"type": "string", "description": "Province code (BA, BT, BR, FG, LE, TA)"},
+      "name": {"type": "string", "description": "Full province name"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"}
+    },
+    "required": ["id", "code", "name", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "config_materials",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "name": {"type": "string", "description": "Material name"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"}
+    },
+    "required": ["id", "name", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "config_price_materials",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "name": {"type": "string", "description": "Price material class name"},
+      "general_material": {"type": "string", "description": "Linked general material"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"}
+    },
+    "required": ["id", "name", "general_material", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "config_foreign_destinations",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "country": {"type": "string", "description": "Foreign country name"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"}
+    },
+    "required": ["id", "country", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "active_caves_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "numero_cave": {"type": "integer", "description": "Number of active caves"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "numero_cave", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "extraction_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "volume_m3": {"type": "number", "description": "Extraction volume in m3"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "volume_m3", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "sales_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "volume_m3": {"type": "number", "description": "Sales volume in m3"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "volume_m3", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "economic_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "fatturato": {"type": "number", "description": "Revenue in euros"},
+      "costi": {"type": "number", "description": "Costs in euros"},
+      "utile_lordo": {"type": "number", "description": "Gross profit in euros"},
+      "utile_netto": {"type": "number", "description": "Net profit in euros"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "fatturato", "costi", "utile_lordo", "utile_netto", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "employment_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "numero_occupati": {"type": "integer", "description": "Number of employees"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "numero_occupati", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "price_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "classe_materiale": {"type": "string", "description": "Material class"},
+      "prezzo_euro_m3": {"type": "number", "description": "Price in euro per m3"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "classe_materiale", "prezzo_euro_m3", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "destination_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "destinazione_tipo": {"type": "string", "description": "Destination type: locale, nazionale, estera"},
+      "destinazione_dettaglio": {"type": "string", "description": "Destination detail (country for estera)"},
+      "volume_m3": {"type": "number", "description": "Volume in m3"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "destinazione_tipo", "volume_m3", "user_id"],
+    "create_only": true
+  },
+  {
+    "title": "competitor_data",
+    "type": "object",
+    "properties": {
+      "id": {"type": "integer", "description": "Primary key, auto-increment"},
+      "anno": {"type": "integer", "description": "Year"},
+      "provincia": {"type": "string", "description": "Province"},
+      "materiale": {"type": "string", "description": "Material"},
+      "tipo_concorrente": {"type": "string", "description": "Competitor type: comunale, provinciale, regionale, nazionale, internazionale"},
+      "numero_concorrenti": {"type": "integer", "description": "Number of competitors"},
+      "user_id": {"type": "string", "description": "User ID"},
+      "created_at": {"type": "string", "format": "date-time", "description": "Creation timestamp"},
+      "updated_at": {"type": "string", "format": "date-time", "description": "Update timestamp"}
+    },
+    "required": ["id", "anno", "provincia", "materiale", "tipo_concorrente", "numero_concorrenti", "user_id"],
+    "create_only": true
+  }
+]

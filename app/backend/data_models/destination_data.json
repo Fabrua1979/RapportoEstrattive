@@ -1,0 +1,57 @@
+{
+    "title": "destination_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "provincia": {
+            "type": "string",
+            "description": "Province"
+        },
+        "materiale": {
+            "type": "string",
+            "description": "Material"
+        },
+        "destinazione_tipo": {
+            "type": "string",
+            "description": "Destination type: locale, nazionale, estera"
+        },
+        "destinazione_dettaglio": {
+            "type": "string",
+            "description": "Destination detail (country for estera)"
+        },
+        "volume_m3": {
+            "type": "number",
+            "description": "Volume in m3"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "anno",
+        "provincia",
+        "materiale",
+        "destinazione_tipo",
+        "volume_m3",
+        "user_id"
+    ]
+}

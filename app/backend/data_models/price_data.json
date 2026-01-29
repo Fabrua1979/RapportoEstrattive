@@ -1,0 +1,43 @@
+{
+    "title": "price_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "classe_materiale": {
+            "type": "string",
+            "description": "Material class"
+        },
+        "prezzo_euro_m3": {
+            "type": "number",
+            "description": "Price in euro per m3"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "anno",
+        "classe_materiale",
+        "prezzo_euro_m3",
+        "user_id"
+    ]
+}

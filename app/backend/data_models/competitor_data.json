@@ -1,0 +1,53 @@
+{
+    "title": "competitor_data",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "anno": {
+            "type": "integer",
+            "description": "Year"
+        },
+        "provincia": {
+            "type": "string",
+            "description": "Province"
+        },
+        "materiale": {
+            "type": "string",
+            "description": "Material"
+        },
+        "tipo_concorrente": {
+            "type": "string",
+            "description": "Competitor type: comunale, provinciale, regionale, nazionale, internazionale"
+        },
+        "numero_concorrenti": {
+            "type": "integer",
+            "description": "Number of competitors"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "anno",
+        "provincia",
+        "materiale",
+        "tipo_concorrente",
+        "numero_concorrenti",
+        "user_id"
+    ]
+}
