@@ -543,8 +543,11 @@ export default function AdminDashboard() {
                   </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {provinces.map((prov) => (
-                      <div key={prov.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span>{prov.sigla}</span>
+                      <div key={prov.id} className="flex justify-between items-center p-2 bg-gray-100 rounded border">
+                        <div>
+                          <span className="font-medium text-gray-900">{prov.code}</span>
+                          <span className="text-gray-700 ml-2">- {prov.name}</span>
+                        </div>
                         <Button variant="ghost" size="sm" onClick={() => handleDeleteProvince(prov.id)}>
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
@@ -572,8 +575,8 @@ export default function AdminDashboard() {
                   </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {materials.map((mat) => (
-                      <div key={mat.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span>{mat.nome}</span>
+                      <div key={mat.id} className="flex justify-between items-center p-2 bg-gray-100 rounded border">
+                        <span className="text-gray-900">{mat.name}</span>
                         <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(mat.id)}>
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
@@ -605,7 +608,7 @@ export default function AdminDashboard() {
                       <SelectContent>
                         {materials.map((mat) => (
                           <SelectItem key={mat.id} value={mat.id.toString()}>
-                            {mat.nome}
+                            {mat.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -619,10 +622,10 @@ export default function AdminDashboard() {
                     {priceMaterials.map((pm) => {
                       const parent = materials.find(m => m.id === pm.materiale_generale_id);
                       return (
-                        <div key={pm.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <div key={pm.id} className="flex justify-between items-center p-2 bg-gray-100 rounded border">
                           <div>
-                            <div className="font-medium">{pm.name}</div>
-                            <div className="text-sm text-gray-500">→ {parent?.nome}</div>
+                            <div className="font-medium text-gray-900">{pm.name}</div>
+                            <div className="text-sm text-gray-600">→ {parent?.name}</div>
                           </div>
                           <Button variant="ghost" size="sm" onClick={() => handleDeletePriceMaterial(pm.id)}>
                             <Trash2 className="w-4 h-4 text-red-500" />
@@ -652,8 +655,8 @@ export default function AdminDashboard() {
                   </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {foreignDestinations.map((dest) => (
-                      <div key={dest.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span>{dest.paese}</span>
+                      <div key={dest.id} className="flex justify-between items-center p-2 bg-gray-100 rounded border">
+                        <span className="text-gray-900">{dest.country}</span>
                         <Button variant="ghost" size="sm" onClick={() => handleDeleteDestination(dest.id)}>
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
