@@ -174,7 +174,12 @@ export default function AdminDashboard() {
   const handleAddProvince = async () => {
     if (!newProvince.trim()) return;
     try {
-      await client.entities.config_provinces.create({ data: { sigla: newProvince.toUpperCase() } });
+      await client.entities.config_provinces.create({ 
+        data: { 
+          code: newProvince.toUpperCase(),
+          name: newProvince.toUpperCase()
+        } 
+      });
       toast({ title: 'Provincia aggiunta con successo' });
       setNewProvince('');
       await loadConfigurations();
@@ -196,7 +201,7 @@ export default function AdminDashboard() {
   const handleAddMaterial = async () => {
     if (!newMaterial.trim()) return;
     try {
-      await client.entities.config_materials.create({ data: { nome: newMaterial } });
+      await client.entities.config_materials.create({ data: { name: newMaterial } });
       toast({ title: 'Materiale aggiunto con successo' });
       setNewMaterial('');
       await loadConfigurations();
@@ -218,10 +223,11 @@ export default function AdminDashboard() {
   const handleAddPriceMaterial = async () => {
     if (!newPriceMaterial.name.trim() || !newPriceMaterial.parent_id) return;
     try {
+      const parentMaterial = materials.find(m => m.id === parseInt(newPriceMaterial.parent_id));
       await client.entities.config_price_materials.create({
         data: {
-          nome: newPriceMaterial.name,
-          materiale_generale_id: parseInt(newPriceMaterial.parent_id)
+          name: newPriceMaterial.name,
+          general_material: parentMaterial?.name || ''
         }
       });
       toast({ title: 'Materiale prezzo aggiunto con successo' });
@@ -245,7 +251,7 @@ export default function AdminDashboard() {
   const handleAddDestination = async () => {
     if (!newDestination.trim()) return;
     try {
-      await client.entities.config_foreign_destinations.create({ data: { paese: newDestination } });
+      await client.entities.config_foreign_destinations.create({ data: { country: newDestination } });
       toast({ title: 'Destinazione estera aggiunta con successo' });
       setNewDestination('');
       await loadConfigurations();
@@ -615,7 +621,7 @@ export default function AdminDashboard() {
                       return (
                         <div key={pm.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                           <div>
-                            <div className="font-medium">{pm.nome}</div>
+                            <div className="font-medium">{pm.name}</div>
                             <div className="text-sm text-gray-500">→ {parent?.nome}</div>
                           </div>
                           <Button variant="ghost" size="sm" onClick={() => handleDeletePriceMaterial(pm.id)}>
@@ -736,7 +742,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -749,7 +755,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -815,7 +821,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -828,7 +834,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -901,7 +907,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -914,7 +920,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -978,7 +984,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -991,7 +997,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1064,7 +1070,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1077,7 +1083,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1165,7 +1171,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1178,7 +1184,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1243,7 +1249,7 @@ export default function AdminDashboard() {
                       <SelectContent>
                         {priceMaterials.map((pm) => (
                           <SelectItem key={pm.id} value={pm.id.toString()}>
-                            {pm.nome}
+                            {pm.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1309,7 +1315,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1322,7 +1328,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1360,7 +1366,7 @@ export default function AdminDashboard() {
                       <SelectContent>
                         {foreignDestinations.map((d) => (
                           <SelectItem key={d.id} value={d.id.toString()}>
-                            {d.paese}
+                            {d.country}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1417,7 +1423,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.sigla}>{p.sigla}</SelectItem>
+                          <SelectItem key={p.id} value={p.code}>{p.code}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1430,7 +1436,7 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {materials.map((m) => (
-                          <SelectItem key={m.id} value={m.nome}>{m.nome}</SelectItem>
+                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
