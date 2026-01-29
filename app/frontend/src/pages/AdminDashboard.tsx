@@ -277,13 +277,16 @@ export default function AdminDashboard() {
     }
 
     try {
-      await client.apiCall.invoke({
+      const response = await client.apiCall.invoke({
         url: '/api/v1/data-reset/reset',
         method: 'POST',
-        data: { anno: resetYear, capitolo: resetChapter }
+        data: { chapter: resetChapter, anno: resetYear }
       });
 
-      toast({ title: 'Successo', description: `Dati ${resetChapter} per anno ${resetYear} resettati` });
+      toast({ 
+        title: 'Successo', 
+        description: response.data.message || `Dati ${resetChapter} per anno ${resetYear} resettati` 
+      });
       setResetYear(2025);
       setResetChapter('');
     } catch (error: any) {
