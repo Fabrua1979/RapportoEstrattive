@@ -531,7 +531,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setNewProvince(e.target.value)}
                       maxLength={2}
                     />
-                    <Button onClick={handleAddProvince}>
+                    <Button onClick={handleAddProvince} className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -560,7 +560,7 @@ export default function AdminDashboard() {
                       value={newMaterial}
                       onChange={(e) => setNewMaterial(e.target.value)}
                     />
-                    <Button onClick={handleAddMaterial}>
+                    <Button onClick={handleAddMaterial} className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -604,7 +604,7 @@ export default function AdminDashboard() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button onClick={handleAddPriceMaterial} className="w-full">
+                    <Button onClick={handleAddPriceMaterial} className="w-full bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Aggiungi
                     </Button>
@@ -640,7 +640,7 @@ export default function AdminDashboard() {
                       value={newDestination}
                       onChange={(e) => setNewDestination(e.target.value)}
                     />
-                    <Button onClick={handleAddDestination}>
+                    <Button onClick={handleAddDestination} className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -766,7 +766,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex gap-4">
-                  <Button onClick={handleAddCaveAutorizzate} className="flex-1">
+                  <Button onClick={handleAddCaveAutorizzate} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -852,7 +852,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddActiveCaves} className="flex-1">
+                  <Button onClick={handleAddActiveCaves} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -929,7 +929,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddExtraction} className="flex-1">
+                  <Button onClick={handleAddExtraction} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -1015,7 +1015,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddSales} className="flex-1">
+                  <Button onClick={handleAddSales} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -1116,7 +1116,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddEconomic} className="flex-1">
+                  <Button onClick={handleAddEconomic} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -1193,7 +1193,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddEmployment} className="flex-1">
+                  <Button onClick={handleAddEmployment} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -1260,7 +1260,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddPrice} className="flex-1">
+                  <Button onClick={handleAddPrice} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -1368,7 +1368,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddDestinationData} className="flex-1">
+                  <Button onClick={handleAddDestinationData} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
@@ -1477,7 +1477,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={handleAddCompetitor} className="flex-1">
+                  <Button onClick={handleAddCompetitor} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>
