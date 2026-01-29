@@ -19,12 +19,20 @@ export default function ExtractionsPage() {
   const [caveDetails, setCaveDetails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedComune, setExpandedComune] = useState<string | null>(null);
+  const [aiComment, setAiComment] = useState<string>('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedYear && extractionData.length > 0) {
+      generateAIComment();
+    }
+  }, [selectedYear, extractionData]);
 
   const fetchData = async () => {
     try {
@@ -121,11 +129,73 @@ export default function ExtractionsPage() {
     return Object.values(comuneMap).sort((a: any, b: any) => b.volume_m3 - a.volume_m3);
   };
 
+  const generateAIComment = async () => {
+    try {
+      setAiLoading(true);
+      const yearData = extractionData.filter(d => d.anno === selectedYear);
+      const totalVolume = yearData.reduce((sum, d) => sum + d.volume_m3, 0);
+      
+      const provinceMap: Record<string, number> = {};
+      yearData.forEach(d => {
+        provinceMap[d.provincia] = (provinceMap[d.provincia] || 0) + d.volume_m3;
+      });
+      const topProvince = Object.entries(provinceMap).sort((a, b) => b[1] - a[1])[0];
+
+      const materialMap: Record<string, number> = {};
+      yearData.forEach(d => {
+        materialMap[d.materiale] = (materialMap[d.materiale] || 0) + d.volume_m3;
+      });
+      const topMaterial = Object.entries(materialMap).sort((a, b) => b[1] - a[1])[0];
+
+      const prompt = `Analizza questi dati sulle estrazioni di materiali in Puglia per l'anno ${selectedYear}:
+- Volume totale estratto: ${totalVolume.toLocaleString()} m³
+- Provincia con maggiori estrazioni: ${topProvince?.[0]} con ${topProvince?.[1]?.toLocaleString()} m³
+- Materiale più estratto: ${topMaterial?.[0]} con ${topMaterial?.[1]?.toLocaleString()} m³
+
+Genera un commento professionale di massimo 3 frasi che evidenzi i trend principali e le implicazioni per il settore estrattivo pugliese.`;
+
+      let fullComment = '';
+      await client.ai.gentxt({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'deepseek-v3.2',
+        stream: true,
+        onChunk: (chunk) => {
+          if (chunk.content) {
+            fullComment += chunk.content;
+            setAiComment(fullComment);
+          }
+        },
+        onComplete: () => {
+          setAiLoading(false);
+        },
+        onError: (error) => {
+          console.error('AI generation error:', error);
+          setAiLoading(false);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating AI comment:', error);
+      setAiLoading(false);
+    }
+  };
+
   const exportToExcel = (data: any[], filename: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Dati');
     XLSX.writeFile(wb, `${filename}_${selectedYear}.xlsx`);
+  };
+  const exportComuneData = async () => {
+    try {
+      const response = await client.entities.extraction_data.query({
+        query: { anno: selectedYear },
+        limit: 1000
+      });
+      const data = response.data?.items || [];
+      exportToExcel(data, 'dati_comunali_estrazioni');
+    } catch (error) {
+      console.error('Error exporting comune data:', error);
+    }
   };
 
   if (loading) {
@@ -168,6 +238,23 @@ export default function ExtractionsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* AI Comment */}
+        {aiComment && (
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">💡</div>
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-2">Analisi AI</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {aiLoading ? 'Generazione analisi in corso...' : aiComment}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -264,10 +351,16 @@ export default function ExtractionsPage() {
                 <CardTitle>Dettagli per Comune - Anno {selectedYear}</CardTitle>
                 <CardDescription>Clicca su un comune per vedere i dettagli</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={() => exportToExcel(comuneDetails, 'estrazioni_comuni')}>
-                <Download className="w-4 h-4 mr-2" />
-                Esporta
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToExcel(comuneDetails, 'estrazioni_comuni')}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Esporta Tabella
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportComuneData}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Scarica Dati Comunali
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>

@@ -112,6 +112,15 @@ export default function AdminDashboard() {
     internazionale: 0
   });
 
+  // Form states for Cave Autorizzate
+  const [caveAutorizzateForm, setCaveAutorizzateForm] = useState({
+    anno: 2025,
+    provincia: '',
+    materiale: '',
+    comune: '',
+    numero_cave: 0
+  });
+
   const chapters = [
     { id: 'cave-autorizzate', name: 'Cave Autorizzate', icon: Mountain, entity: 'annual_cave_data' },
     { id: 'cave-attive', name: 'Cave in Attività', icon: Activity, entity: 'active_caves_data' },
@@ -399,6 +408,30 @@ export default function AdminDashboard() {
       toast({ title: 'Errore', description: error.message, variant: 'destructive' });
     }
   };
+
+  const handleAddCaveAutorizzate = async () => {
+    if (!caveAutorizzateForm.provincia || !caveAutorizzateForm.materiale) {
+      toast({ title: 'Errore', description: 'Compila tutti i campi obbligatori', variant: 'destructive' });
+      return;
+    }
+    try {
+      await client.entities.annual_cave_data.create({ 
+        data: {
+          anno: caveAutorizzateForm.anno,
+          provincia: caveAutorizzateForm.provincia,
+          materiale: caveAutorizzateForm.materiale,
+          comune: caveAutorizzateForm.comune || null,
+          numero_cave: caveAutorizzateForm.numero_cave
+        }
+      });
+      toast({ title: 'Dato aggiunto con successo' });
+      setCaveAutorizzateForm({ anno: 2025, provincia: '', materiale: '', comune: '', numero_cave: 0 });
+    } catch (error: any) {
+      toast({ title: 'Errore', description: error.message, variant: 'destructive' });
+    }
+  };
+
+
 
   // Excel upload handlers
   const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>, entityName: string) => {
@@ -693,14 +726,14 @@ export default function AdminDashboard() {
                     <Label>Anno</Label>
                     <Input
                       type="number"
-                      defaultValue={2025}
-                      id="cave-autorizzate-anno"
+                      value={caveAutorizzateForm.anno}
+                      onChange={(e) => setCaveAutorizzateForm({ ...caveAutorizzateForm, anno: parseInt(e.target.value) })}
                     />
                   </div>
                   <div>
                     <Label>Provincia *</Label>
-                    <Select>
-                      <SelectTrigger id="cave-autorizzate-provincia">
+                    <Select value={caveAutorizzateForm.provincia} onValueChange={(v) => setCaveAutorizzateForm({ ...caveAutorizzateForm, provincia: v })}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Seleziona" />
                       </SelectTrigger>
                       <SelectContent>
@@ -712,8 +745,8 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <Label>Materiale *</Label>
-                    <Select>
-                      <SelectTrigger id="cave-autorizzate-materiale">
+                    <Select value={caveAutorizzateForm.materiale} onValueChange={(v) => setCaveAutorizzateForm({ ...caveAutorizzateForm, materiale: v })}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Seleziona" />
                       </SelectTrigger>
                       <SelectContent>
@@ -728,46 +761,22 @@ export default function AdminDashboard() {
                     <Input
                       type="text"
                       placeholder="Nome comune"
-                      id="cave-autorizzate-comune"
+                      value={caveAutorizzateForm.comune}
+                      onChange={(e) => setCaveAutorizzateForm({ ...caveAutorizzateForm, comune: e.target.value })}
                     />
                   </div>
                   <div>
                     <Label>Cave Autorizzate</Label>
                     <Input
                       type="number"
-                      defaultValue={0}
-                      id="cave-autorizzate-numero"
+                      value={caveAutorizzateForm.numero_cave}
+                      onChange={(e) => setCaveAutorizzateForm({ ...caveAutorizzateForm, numero_cave: parseInt(e.target.value) })}
                     />
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <Button 
-                    onClick={async () => {
-                      const anno = parseInt((document.getElementById('cave-autorizzate-anno') as HTMLInputElement).value);
-                      const provincia = (document.getElementById('cave-autorizzate-provincia') as HTMLInputElement).textContent?.trim();
-                      const materiale = (document.getElementById('cave-autorizzate-materiale') as HTMLInputElement).textContent?.trim();
-                      const comune = (document.getElementById('cave-autorizzate-comune') as HTMLInputElement).value || null;
-                      const cave_autorizzate = parseInt((document.getElementById('cave-autorizzate-numero') as HTMLInputElement).value);
-
-                      if (!provincia || !materiale) {
-                        toast({ title: 'Errore', description: 'Compila tutti i campi obbligatori', variant: 'destructive' });
-                        return;
-                      }
-
-                      try {
-                        await client.entities.annual_cave_data.create({
-                          data: { anno, provincia, materiale, comune, cave_autorizzate }
-                        });
-                        toast({ title: 'Dato aggiunto con successo' });
-                        (document.getElementById('cave-autorizzate-comune') as HTMLInputElement).value = '';
-                        (document.getElementById('cave-autorizzate-numero') as HTMLInputElement).value = '0';
-                      } catch (error: any) {
-                        toast({ title: 'Errore', description: error.message, variant: 'destructive' });
-                      }
-                    }}
-                    className="flex-1"
-                  >
+                  <Button onClick={handleAddCaveAutorizzate} className="flex-1">
                     <Save className="w-4 h-4 mr-2" />
                     Aggiungi Dato
                   </Button>

@@ -20,12 +20,20 @@ export default function ActiveCavesPage() {
   const [caveDetails, setCaveDetails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedComune, setExpandedComune] = useState<string | null>(null);
+  const [aiComment, setAiComment] = useState<string>('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedYear && activeCavesData.length > 0) {
+      generateAIComment();
+    }
+  }, [selectedYear, activeCavesData]);
 
   const fetchData = async () => {
     try {
@@ -159,11 +167,81 @@ export default function ActiveCavesPage() {
       .sort((a, b) => b.numero_cave - a.numero_cave);
   };
 
+  const generateAIComment = async () => {
+    try {
+      setAiLoading(true);
+      const yearData = activeCavesData.filter(d => d.anno === selectedYear);
+      const totalActive = yearData.reduce((sum, d) => sum + d.numero_cave, 0);
+      const authorizedYear = authorizedCavesData.filter(d => d.anno === selectedYear);
+      const totalAuthorized = authorizedYear.reduce((sum, d) => sum + d.numero_cave, 0);
+      const percentage = totalAuthorized > 0 ? ((totalActive / totalAuthorized) * 100).toFixed(1) : 0;
+      
+      const provinceMap: Record<string, number> = {};
+      yearData.forEach(d => {
+        provinceMap[d.provincia] = (provinceMap[d.provincia] || 0) + d.numero_cave;
+      });
+      const topProvince = Object.entries(provinceMap).sort((a, b) => b[1] - a[1])[0];
+
+      const prompt = `Analizza questi dati sulle cave in attività in Puglia per l'anno ${selectedYear}:
+- Totale cave attive: ${totalActive}
+- Totale cave autorizzate: ${totalAuthorized}
+- Percentuale attive su autorizzate: ${percentage}%
+- Provincia con più cave attive: ${topProvince?.[0]} con ${topProvince?.[1]} cave
+
+Genera un commento professionale di massimo 3 frasi che evidenzi:
+1. Il tasso di attività delle cave
+2. La provincia leader
+3. Un'osservazione sul trend o sulla distribuzione
+
+Rispondi SOLO con il commento, senza introduzioni.`;
+
+      let fullComment = '';
+      await client.ai.gentxt({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'deepseek-v3.2',
+        stream: true,
+        onChunk: (chunk) => {
+          fullComment += chunk.content;
+          setAiComment(fullComment);
+        },
+        onComplete: () => {
+          setAiLoading(false);
+        },
+        onError: (error) => {
+          console.error('AI comment error:', error);
+          setAiLoading(false);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating AI comment:', error);
+      setAiLoading(false);
+    }
+  };
+
   const exportToExcel = (data: any[], filename: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Dati');
     XLSX.writeFile(wb, `${filename}_${selectedYear}.xlsx`);
+  };
+
+  const exportComuneData = () => {
+    const comuneData = caveDetails
+      .filter(item => item.anno === selectedYear && item.stato_cava === 'Attiva')
+      .map(item => ({
+        Anno: item.anno,
+        Comune: item.comune,
+        Provincia: item.provincia,
+        Materiale: item.materiale,
+        Azienda: item.azienda,
+        Località: item.localita,
+        'Numero Fascicolo': item.numero_fascicolo
+      }));
+    
+    const ws = XLSX.utils.json_to_sheet(comuneData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Dati Comunali');
+    XLSX.writeFile(wb, `cave_attive_dati_comunali_${selectedYear}.xlsx`);
   };
 
   if (loading) {
@@ -208,6 +286,35 @@ export default function ActiveCavesPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* AI Comment */}
+        {aiComment && (
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">💡</div>
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-2">Analisi AI</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {aiLoading ? 'Generazione analisi in corso...' : aiComment}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Download Comunale Data Button */}
+        <div className="flex justify-end">
+          <Button 
+            variant="outline"
+            onClick={exportComuneData}
+            className="bg-green-50 border-green-300 hover:bg-green-100"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Scarica Dati Comunali Excel
+          </Button>
+        </div>
+
         {/* Temporal Trend */}
         <Card>
           <CardHeader>
