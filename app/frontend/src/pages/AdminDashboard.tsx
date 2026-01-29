@@ -117,7 +117,6 @@ export default function AdminDashboard() {
     anno: 2025,
     provincia: '',
     materiale: '',
-    comune: '',
     numero_cave: 0
   });
 
@@ -415,17 +414,16 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      await client.entities.annual_cave_data.create({ 
+      await client.entities.province_material_data.create({ 
         data: {
           anno: caveAutorizzateForm.anno,
           provincia: caveAutorizzateForm.provincia,
           materiale: caveAutorizzateForm.materiale,
-          comune: caveAutorizzateForm.comune || null,
           numero_cave: caveAutorizzateForm.numero_cave
         }
       });
       toast({ title: 'Dato aggiunto con successo' });
-      setCaveAutorizzateForm({ anno: 2025, provincia: '', materiale: '', comune: '', numero_cave: 0 });
+      setCaveAutorizzateForm({ anno: 2025, provincia: '', materiale: '', numero_cave: 0 });
     } catch (error: any) {
       toast({ title: 'Errore', description: error.message, variant: 'destructive' });
     }
@@ -756,15 +754,7 @@ export default function AdminDashboard() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label>Comune (opzionale)</Label>
-                    <Input
-                      type="text"
-                      placeholder="Nome comune"
-                      value={caveAutorizzateForm.comune}
-                      onChange={(e) => setCaveAutorizzateForm({ ...caveAutorizzateForm, comune: e.target.value })}
-                    />
-                  </div>
+
                   <div>
                     <Label>Cave Autorizzate</Label>
                     <Input
